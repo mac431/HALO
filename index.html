@@ -115,7 +115,31 @@ table.lista td.nom:hover{color:var(--rosa);}
 .tab.on{border-color:var(--banner); color:var(--rosa);
   background:linear-gradient(180deg,#3A1A20,#1c0e12);}
 .tab:active{transform:translateY(1px);}
+.hqb-fila{background:linear-gradient(180deg,#1E1E21,#141416); border:1px solid #2E2E32; border-top:2px solid var(--banner);
+  padding:12px 14px; margin-bottom:10px; box-shadow:0 2px 6px rgba(0,0,0,.5);}
+.hqb-cab{display:flex; align-items:baseline; gap:10px; margin-bottom:8px; flex-wrap:wrap;}
+.hqb-cab .niv{font-family:"Arial Narrow",Arial; font-size:18px; font-weight:800; letter-spacing:.1em; color:var(--rosa);}
+.hqb-cab .cnt{font-size:11px; color:var(--tinta2); letter-spacing:.08em; text-transform:uppercase;}
+.hqb-cab .verdict{margin-left:auto; font-size:12px; font-weight:700; letter-spacing:.06em;}
+.hqb-barra{display:flex; height:16px; border-radius:3px; overflow:hidden; background:#0E0A0B; margin-bottom:8px;}
+.hqb-barra span{display:block; height:100%;}
+.hqb-g{background:var(--verde);} .hqb-y{background:var(--ambar);} .hqb-r{background:var(--rojo);}
+.hqb-nums{display:flex; gap:14px; font-size:12px; color:var(--tinta2); flex-wrap:wrap;}
+.hqb-nums b{font-variant-numeric:tabular-nums;}
+.hqb-nums .g{color:var(--verde);} .hqb-nums .y{color:var(--ambar);} .hqb-nums .r{color:var(--rojo);}
+.hqb-reco{font-size:12px; color:var(--tinta); margin-top:8px; padding-top:8px; border-top:1px solid rgba(74,42,49,.5); line-height:1.5;}
+.hqb-reco b{color:var(--rosa);}
+.hqb-reco a{color:var(--tinta); border-bottom:1px dotted #4a4a4e; text-decoration:none; cursor:pointer;}
 .est-ok{color:var(--verde);} .est-1{color:var(--ambar);} .est-2{color:#E8743F;} .est-3{color:var(--rojo); font-weight:700;}
+.hqb-seg{cursor:pointer;} .hqb-chip{cursor:pointer; padding:2px 6px; border-radius:3px;}
+.hqb-chip:active{transform:translateY(1px);}
+.hqb-lista{margin:8px 0; background:#0E0A0B; border:1px solid var(--linea); padding:8px 10px;}
+.hqb-lista-tit{font-size:11px; letter-spacing:.1em; text-transform:uppercase; margin-bottom:6px; font-weight:700;}
+.hqb-gt{color:var(--verde);} .hqb-yt{color:var(--ambar);} .hqb-rt{color:var(--rojo);}
+.hqb-lrow{display:flex; justify-content:space-between; gap:10px; padding:4px 0; border-bottom:1px solid rgba(74,42,49,.4); font-size:13px;}
+.hqb-lrow:last-child{border-bottom:none;}
+.hqb-lrow a{color:var(--tinta); text-decoration:none; border-bottom:1px dotted #4a4a4e; cursor:pointer;}
+.hqb-lrow span{font-variant-numeric:tabular-nums; color:var(--tinta2);}
 .hq-fila{display:flex; gap:10px; padding:9px 0; border-bottom:1px solid rgba(74,42,49,.4); font-size:13px; align-items:baseline;}
 .hq-fila:last-child{border-bottom:none;}
 .hq-niv{color:var(--rosa); min-width:58px; letter-spacing:.1em; font-weight:700;}
@@ -293,15 +317,16 @@ window.addEventListener("DOMContentLoaded", function(){
     <div class="fmly disp"><b>HALO LNH FMLY</b> · Survive together · answer together</div>
   </div>
   <div class="stamp">
-    <b class="disp">Snapshot: Thu, Jul 23, 2026</b> · <span style="opacity:.6">build 26</span><br>
+    <b class="disp">Saturday close · Jul 26, 2026</b> · <span style="opacity:.6">build 27</span><br>
     99 members · power & kills complete · VS and donations are mid-week
   </div>
 </header>
 
-<div class="aviso"><b>Pace-adjusted:</b> the weekly VS minimum is due at Saturday close. Mid-week, everyone is measured against their <b>pace</b>: weekly minimum × day/6 (a 6M player needs ~3M by Wednesday). Final pass/fail only happens on Saturday. Rookie shield: KiraFrost (Jul 22) and Andrea 71 (Jul 23) — their VS is N/A this week. Full Thursday snapshot: power, HQ, donations and VS all from Jul 23.<br><span id="fuente">Source: embedded data — full Jul 23 snapshot (kills Jul 20).</span></div>
+<div class="aviso"><b>Saturday close — first full evaluation.</b> These are final weekly numbers; the minimum now applies in full. All-Time VS is each member total across their whole time in the alliance (history and consistency). Rookie shield: KiraFrost (Jul 22) and Andrea 71 (Jul 23) — their VS is N/A this week. Full Thursday snapshot: power, HQ, donations and VS all from Jul 23.<br><span id="fuente">Source: embedded data — full Jul 23 snapshot (kills Jul 20).</span></div>
 
 <div class="tabs disp" role="tablist">
   <button class="tab on" id="tabBtnSemana" role="tab">This Week</button>
+  <button class="tab" id="tabBtnHQ" role="tab">HQ Board</button>
   <button class="tab" id="tabBtnHistoria" role="tab">History</button>
 </div>
 
@@ -400,7 +425,8 @@ window.addEventListener("DOMContentLoaded", function(){
   <div class="panel">
     <div class="rank-controles" role="group" aria-label="Ranking metric">
       <button class="chip on" data-met="idx">Value Index</button>
-      <button class="chip" data-met="vs">VS Points</button>
+      <button class="chip" data-met="vs">Weekly VS</button>
+      <button class="chip" data-met="atvs">All-Time VS</button>
       <button class="chip" data-met="vsPct">% of Minimum</button>
       <button class="chip" data-met="d">Donations</button>
       <button class="chip" data-met="kpm">Kills / M Power</button>
@@ -439,11 +465,20 @@ window.addEventListener("DOMContentLoaded", function(){
 
 </div><!-- /tabSemana -->
 
+<div id="tabHQ" hidden>
+<section>
+  <div class="sec-t"><h2 class="disp">HQ Board</h2>
+  <span class="sub">Traffic-light view — who's carrying, who needs a nudge, per HQ tier</span></div>
+  <p class="ayuda"><b>How to read it:</b> each row is one HQ tier. Green = meets the weekly minimum, yellow = close (60%+), red = below. The bar shows the share of that tier in each state — a mostly-green bar means that group is healthy. <b>Tap any color or count to list those exact players.</b></p>
+  <div id="hqBoard"></div>
+</section>
+</div>
+
 <div id="tabHistoria" hidden>
 <section>
   <div class="sec-t"><h2 class="disp">Total History</h2>
   <span class="sub">Week-by-week record · escalation ladder counted automatically</span></div>
-  <p class="ayuda" id="histNota"><b>Setup (one time):</b> in your Google Sheet create a second tab named <b>HISTORIA</b> with headers: <b>Semana, Jugador, Poder, VS, Donacion, Kills, HQ</b> (only Semana, Jugador and VS are required). Every Sunday, after Saturday close, copy that week's final rows into HISTORIA with the week label (e.g. 2026-W30). Then publish that tab as CSV (File → Share → Publish to web → HISTORIA → CSV) and paste the URL into <b>SHEET_HISTORY_CSV_URL</b> inside this file. This tab fills in automatically from then on.</p>
+  <p class="ayuda" id="histNota">W30 is already loaded below. To keep growing the record automatically, create a second tab named <b>HISTORIA</b> in your Google Sheet with headers: <b>Semana, Jugador, Poder, VS, Donacion, Kills, HQ</b> (only Semana, Jugador and VS are required). Every Sunday, after Saturday close, copy that week's final rows into HISTORIA with the week label (e.g. 2026-W30). Then publish that tab as CSV (File → Share → Publish to web → HISTORIA → CSV) and paste the URL into <b>SHEET_HISTORY_CSV_URL</b> inside this file. This tab fills in automatically from then on.</p>
   <div class="panel" id="histPanel" hidden>
     <div class="scrollx"><table class="lista" id="histTabla"></table></div>
   </div>
@@ -468,8 +503,10 @@ window.addEventListener("DOMContentLoaded", function(){
 const SHEET_CSV_URL = "";
 /* Pestaña HISTORIA publicada como CSV (Semana, Jugador, Poder, VS): */
 const SHEET_HISTORY_CSV_URL = "";
+/* Historial embebido (semanas ya cerradas). El Sheet HISTORIA, si se conecta, se AÑADE a esto. */
+const HISTORIA_LOCAL = [{"w":"2026-W30","n":"LAKIDIO","pw":176500000,"vs":58798482,"dn":166080,"kl":1978163,"hq":29},{"w":"2026-W30","n":"Vaelis","pw":151700000,"vs":25863915,"dn":73540,"kl":2718625,"hq":29},{"w":"2026-W30","n":"Mythos","pw":151400000,"vs":78650325,"dn":104980,"kl":885028,"hq":27},{"w":"2026-W30","n":"LUSi","pw":147900000,"vs":37047601,"dn":112080,"kl":1095038,"hq":28},{"w":"2026-W30","n":"Anatselo7","pw":136300000,"vs":31671722,"dn":127460,"kl":762962,"hq":27},{"w":"2026-W30","n":"Araneo","pw":132500000,"vs":9468924,"dn":86140,"kl":257956,"hq":27},{"w":"2026-W30","n":"Healerrr","pw":132300000,"vs":64220553,"dn":130160,"kl":832804,"hq":27},{"w":"2026-W30","n":"KiraFrost","pw":118500000,"vs":14044344,"dn":69960,"kl":894805,"hq":27},{"w":"2026-W30","n":"Marcela","pw":115200000,"vs":7306814,"dn":43320,"kl":0,"hq":26},{"w":"2026-W30","n":"Tertullian","pw":114400000,"vs":17660170,"dn":71040,"kl":166158,"hq":25},{"w":"2026-W30","n":"Spidergas","pw":108100000,"vs":24062995,"dn":91120,"kl":147642,"hq":25},{"w":"2026-W30","n":"Silent BoB","pw":107200000,"vs":11130720,"dn":92760,"kl":255387,"hq":26},{"w":"2026-W30","n":"IRON ROSE","pw":106900000,"vs":19091518,"dn":100320,"kl":480771,"hq":27},{"w":"2026-W30","n":"Daanicaa","pw":105600000,"vs":19693880,"dn":83400,"kl":132243,"hq":25},{"w":"2026-W30","n":"Phobuki","pw":105300000,"vs":21631973,"dn":105840,"kl":316732,"hq":26},{"w":"2026-W30","n":"Dimi92","pw":102600000,"vs":10981742,"dn":126720,"kl":140564,"hq":25},{"w":"2026-W30","n":"Pramheda","pw":102200000,"vs":27387478,"dn":114480,"kl":283988,"hq":26},{"w":"2026-W30","n":"iKoren","pw":102100000,"vs":22023664,"dn":78480,"kl":727236,"hq":27},{"w":"2026-W30","n":"FinnWolf","pw":101000000,"vs":18025180,"dn":111800,"kl":102489,"hq":25},{"w":"2026-W30","n":"KillaFish","pw":100600000,"vs":26339161,"dn":77640,"kl":565427,"hq":27},{"w":"2026-W30","n":"aurelll","pw":100400000,"vs":10745879,"dn":96360,"kl":729229,"hq":26},{"w":"2026-W30","n":"hoodmell2","pw":99400000,"vs":8181837,"dn":61200,"kl":58584,"hq":26},{"w":"2026-W30","n":"Bellos","pw":99300000,"vs":11427117,"dn":85800,"kl":661223,"hq":27},{"w":"2026-W30","n":"Yehoshuaa","pw":98800000,"vs":18307992,"dn":82640,"kl":371587,"hq":25},{"w":"2026-W30","n":"Aw oragaul","pw":98600000,"vs":18235490,"dn":84840,"kl":577883,"hq":27},{"w":"2026-W30","n":"Texastacofien","pw":98200000,"vs":10379753,"dn":106920,"kl":27630,"hq":24},{"w":"2026-W30","n":"NADAELSA","pw":97800000,"vs":12088456,"dn":83140,"kl":258657,"hq":26},{"w":"2026-W30","n":"NV Forever","pw":97700000,"vs":11371699,"dn":66600,"kl":202467,"hq":26},{"w":"2026-W30","n":"MythosJr","pw":97700000,"vs":7054512,"dn":42020,"kl":293020,"hq":26},{"w":"2026-W30","n":"Jeal","pw":97500000,"vs":14101343,"dn":60680,"kl":42568,"hq":25},{"w":"2026-W30","n":"Saifkhank55","pw":97000000,"vs":13525207,"dn":91820,"kl":218561,"hq":25},{"w":"2026-W30","n":"WhaleofATime","pw":96400000,"vs":20205198,"dn":92160,"kl":452206,"hq":27},{"w":"2026-W30","n":"Aya57","pw":95400000,"vs":18260212,"dn":84960,"kl":116880,"hq":26},{"w":"2026-W30","n":"Laong Laan","pw":94200000,"vs":9308268,"dn":93480,"kl":99556,"hq":25},{"w":"2026-W30","n":"Macarr","pw":94100000,"vs":25994047,"dn":99300,"kl":567783,"hq":25},{"w":"2026-W30","n":"Sima-balzcrashr","pw":93800000,"vs":14769760,"dn":93620,"kl":103795,"hq":24},{"w":"2026-W30","n":"Doler G","pw":93300000,"vs":19826434,"dn":36660,"kl":547220,"hq":26},{"w":"2026-W30","n":"JJORGE","pw":93000000,"vs":14037339,"dn":94440,"kl":80929,"hq":25},{"w":"2026-W30","n":"LATAN","pw":92100000,"vs":6523800,"dn":81020,"kl":43331,"hq":25},{"w":"2026-W30","n":"Pilgrim","pw":92000000,"vs":22333914,"dn":65400,"kl":47570,"hq":25},{"w":"2026-W30","n":"KluczyK","pw":91700000,"vs":11619702,"dn":73200,"kl":243021,"hq":26},{"w":"2026-W30","n":"°TiaN°","pw":91200000,"vs":12760584,"dn":88200,"kl":307990,"hq":25},{"w":"2026-W30","n":"子宣","pw":91000000,"vs":7769664,"dn":100320,"kl":37955,"hq":25},{"w":"2026-W30","n":"卡拉賓","pw":90000000,"vs":12729762,"dn":86260,"kl":116872,"hq":26},{"w":"2026-W30","n":"fatezero87","pw":89800000,"vs":11709682,"dn":74520,"kl":202561,"hq":25},{"w":"2026-W30","n":"GKAR","pw":87400000,"vs":25071167,"dn":63240,"kl":427389,"hq":25},{"w":"2026-W30","n":"-LiGhTbOrN-","pw":87200000,"vs":14701518,"dn":50280,"kl":455616,"hq":26},{"w":"2026-W30","n":"YUDISTIRAWIJAYA","pw":86800000,"vs":16065072,"dn":79400,"kl":177750,"hq":25},{"w":"2026-W30","n":"Mr SRiNU","pw":86400000,"vs":11030656,"dn":63720,"kl":78162,"hq":25},{"w":"2026-W30","n":"Araashi","pw":86400000,"vs":6818091,"dn":37320,"kl":195008,"hq":25},{"w":"2026-W30","n":"kbs gamesyt","pw":86400000,"vs":5750264,"dn":91080,"kl":63413,"hq":26},{"w":"2026-W30","n":"Lex-i","pw":85700000,"vs":5496553,"dn":33600,"kl":202303,"hq":25},{"w":"2026-W30","n":"Lycanh","pw":85200000,"vs":6628913,"dn":48840,"kl":221297,"hq":26},{"w":"2026-W30","n":"DrCrosz","pw":84700000,"vs":5735841,"dn":66400,"kl":156843,"hq":25},{"w":"2026-W30","n":"Mr oxygen","pw":84600000,"vs":11733594,"dn":94560,"kl":158446,"hq":25},{"w":"2026-W30","n":"Gethuk Lindri","pw":84400000,"vs":8704303,"dn":77920,"kl":38654,"hq":25},{"w":"2026-W30","n":"○・○","pw":84300000,"vs":20274723,"dn":85920,"kl":173224,"hq":25},{"w":"2026-W30","n":"BIG BEAR 1","pw":84000000,"vs":11075559,"dn":90360,"kl":46818,"hq":24},{"w":"2026-W30","n":"Garferr","pw":83400000,"vs":3648565,"dn":98280,"kl":69619,"hq":25},{"w":"2026-W30","n":"angel1414","pw":83100000,"vs":4217933,"dn":90160,"kl":277129,"hq":25},{"w":"2026-W30","n":"Baby drvu","pw":80300000,"vs":13160050,"dn":91440,"kl":262187,"hq":26},{"w":"2026-W30","n":"Black 05","pw":79800000,"vs":14727987,"dn":92940,"kl":34537,"hq":25},{"w":"2026-W30","n":"Gabbar sher","pw":79200000,"vs":7712735,"dn":71280,"kl":177372,"hq":25},{"w":"2026-W30","n":"RaenyDaze","pw":78900000,"vs":15777682,"dn":69480,"kl":8695,"hq":25},{"w":"2026-W30","n":"ScobyDoo","pw":78800000,"vs":9101404,"dn":62160,"kl":633432,"hq":26},{"w":"2026-W30","n":"David 0001","pw":78300000,"vs":11030220,"dn":88560,"kl":217007,"hq":25},{"w":"2026-W30","n":"Onde-onde","pw":76700000,"vs":12443461,"dn":78460,"kl":249517,"hq":26},{"w":"2026-W30","n":"YaiYai8989","pw":76500000,"vs":11214662,"dn":83400,"kl":229241,"hq":25},{"w":"2026-W30","n":"PANAGIOTHS 1","pw":76500000,"vs":8544856,"dn":56680,"kl":98418,"hq":25},{"w":"2026-W30","n":"SULCATA","pw":76400000,"vs":2151021,"dn":42120,"kl":249636,"hq":25},{"w":"2026-W30","n":"Knight-Rod","pw":74900000,"vs":17016691,"dn":79560,"kl":117995,"hq":25},{"w":"2026-W30","n":"DeniM","pw":74800000,"vs":2214902,"dn":44700,"kl":50222,"hq":24},{"w":"2026-W30","n":"КЕЙ","pw":73400000,"vs":15906317,"dn":94900,"kl":247463,"hq":25},{"w":"2026-W30","n":"Abed joma120","pw":73300000,"vs":22001741,"dn":91440,"kl":171184,"hq":25},{"w":"2026-W30","n":"Femor","pw":71500000,"vs":10956668,"dn":83400,"kl":136830,"hq":25},{"w":"2026-W30","n":"Rara zii","pw":71300000,"vs":9553160,"dn":56880,"kl":38828,"hq":24},{"w":"2026-W30","n":"RIKASI","pw":70500000,"vs":16068949,"dn":115360,"kl":122841,"hq":25},{"w":"2026-W30","n":"I m X","pw":70200000,"vs":25785647,"dn":100200,"kl":973331,"hq":26},{"w":"2026-W30","n":"soor","pw":69900000,"vs":16073372,"dn":85560,"kl":393694,"hq":26},{"w":"2026-W30","n":"Doom11","pw":69800000,"vs":2519584,"dn":58200,"kl":17297,"hq":25},{"w":"2026-W30","n":"BanikJnr","pw":69100000,"vs":13425901,"dn":75480,"kl":199116,"hq":25},{"w":"2026-W30","n":"Leyla Rootmade","pw":67600000,"vs":6151677,"dn":52720,"kl":98652,"hq":24},{"w":"2026-W30","n":"SR 873","pw":67500000,"vs":11551965,"dn":89100,"kl":319109,"hq":25},{"w":"2026-W30","n":"ankit62","pw":66800000,"vs":3370210,"dn":9240,"kl":601522,"hq":26},{"w":"2026-W30","n":"MAN-MACHINE","pw":66500000,"vs":10089709,"dn":87280,"kl":443451,"hq":26},{"w":"2026-W30","n":"Sava81","pw":66300000,"vs":4253290,"dn":17440,"kl":8987,"hq":24},{"w":"2026-W30","n":"Setroc11","pw":65599999,"vs":5516637,"dn":7320,"kl":126978,"hq":25},{"w":"2026-W30","n":"KyōTo","pw":63600000,"vs":15514488,"dn":63240,"kl":456467,"hq":26},{"w":"2026-W30","n":"Andrea 71","pw":63600000,"vs":1545535,"dn":41280,"kl":0,"hq":24},{"w":"2026-W30","n":"salvador FC","pw":61900000,"vs":11140088,"dn":72620,"kl":232000,"hq":25},{"w":"2026-W30","n":"JAXH THE SLAYER","pw":61200000,"vs":13060924,"dn":78960,"kl":69875,"hq":24},{"w":"2026-W30","n":"JLITENG","pw":58600000,"vs":13496226,"dn":94860,"kl":93167,"hq":24},{"w":"2026-W30","n":"UnHoly","pw":57800000,"vs":31528275,"dn":83040,"kl":899247,"hq":26},{"w":"2026-W30","n":"Burgerakos","pw":54900000,"vs":12945670,"dn":61320,"kl":226207,"hq":25},{"w":"2026-W30","n":"ThanatosU","pw":54300000,"vs":6725573,"dn":18720,"kl":41619,"hq":24},{"w":"2026-W30","n":"LLucky","pw":51100000,"vs":13036317,"dn":35020,"kl":0,"hq":24},{"w":"2026-W30","n":"Mhiu96","pw":50300000,"vs":14899153,"dn":57360,"kl":261406,"hq":26},{"w":"2026-W30","n":"shiva120","pw":49900000,"vs":12175012,"dn":74460,"kl":44289,"hq":25},{"w":"2026-W30","n":"moon 20","pw":46200000,"vs":14605254,"dn":76920,"kl":229433,"hq":26},{"w":"2026-W30","n":"SkyMineee","pw":38000000,"vs":12325985,"dn":61320,"kl":345950,"hq":24}];
 
-const DATA_LOCAL = [{"n":"LAKIDIO","rp":1,"p":187500000,"k":1978163,"d":84120,"vs":38836192,"hq":29},{"n":"Vaelis","rp":2,"p":147800000,"k":2718625,"d":40920,"vs":10397673,"hq":29},{"n":"Mythos","rp":3,"p":139600000,"k":885028,"d":59500,"vs":30680977,"hq":27},{"n":"LUSi","rp":4,"p":129699999,"k":1095038,"d":54840,"vs":22322062,"hq":28},{"n":"Anatselo7","rp":5,"p":121200000,"k":762962,"d":73220,"vs":16569627,"hq":27},{"n":"Doler G","rp":6,"p":119300000,"k":547220,"d":19680,"vs":6287939,"hq":26},{"n":"Araneo","rp":7,"p":118200000,"k":257956,"d":44740,"vs":3337402,"hq":27},{"n":"KiraFrost","rp":8,"p":114800000,"k":894805,"d":26400,"vs":7124889,"hq":27},{"n":"Tertullian","rp":9,"p":113700000,"k":166158,"d":36600,"vs":12797744,"hq":25},{"n":"iKoren","rp":10,"p":109900000,"k":727236,"d":45000,"vs":9599930,"hq":26},{"n":"IRON ROSE","rp":11,"p":107000000,"k":480771,"d":51600,"vs":14901360,"hq":26},{"n":"Pramheda","rp":12,"p":105900000,"k":283988,"d":64320,"vs":21099930,"hq":26},{"n":"Daanicaa","rp":13,"p":104800000,"k":132243,"d":47880,"vs":14839875,"hq":25},{"n":"NV Forever","rp":14,"p":104800000,"k":202467,"d":37680,"vs":6822615,"hq":25},{"n":"Phobuki","rp":15,"p":104700000,"k":316732,"d":57480,"vs":16396387,"hq":26},{"n":"Silent BoB","rp":16,"p":104400000,"k":255387,"d":42720,"vs":6218559,"hq":26},{"n":"NADAELSA","rp":17,"p":103100000,"k":258657,"d":43900,"vs":8733319,"hq":26},{"n":"aurelll","rp":18,"p":102000000,"k":729229,"d":53760,"vs":7747236,"hq":26},{"n":"FinnWolf","rp":19,"p":100500000,"k":102489,"d":64400,"vs":13617523,"hq":25},{"n":"hoodmell2","rp":20,"p":100200000,"k":58584,"d":31920,"vs":5832368,"hq":26},{"n":"Healerrr","rp":21,"p":98000000,"k":832804,"d":69920,"vs":19241047,"hq":27},{"n":"Yehoshuaa","rp":22,"p":97700000,"k":371587,"d":40900,"vs":14568211,"hq":25},{"n":"KillaFish","rp":23,"p":97000000,"k":565427,"d":48000,"vs":14414551,"hq":26},{"n":"YaiYai8989","rp":24,"p":96900000,"k":229241,"d":49000,"vs":6834521,"hq":25},{"n":"Dimi92","rp":25,"p":96600000,"k":140564,"d":68640,"vs":8812660,"hq":24},{"n":"MythosJr","rp":26,"p":96300000,"k":293020,"d":20900,"vs":5828239,"hq":25},{"n":"Spidergas","rp":27,"p":96200000,"k":147642,"d":47820,"vs":16937728,"hq":25},{"n":"Macarr","rp":28,"p":96100000,"k":567783,"d":50400,"vs":18408006,"hq":25},{"n":"Saifkhank55","rp":29,"p":95000000,"k":218561,"d":50900,"vs":7215817,"hq":25},{"n":"fatezero87","rp":30,"p":94700000,"k":202561,"d":39240,"vs":8473100,"hq":25},{"n":"Jeal","rp":31,"p":93200000,"k":42568,"d":32420,"vs":11582021,"hq":25},{"n":"UnHoly","rp":32,"p":93100000,"k":899247,"d":52560,"vs":11536315,"hq":26},{"n":"David 0001","rp":33,"p":92700000,"k":217007,"d":42960,"vs":5517056,"hq":25},{"n":"Aya57","rp":34,"p":92500000,"k":116880,"d":45120,"vs":11063775,"hq":26},{"n":"Mr oxygen","rp":35,"p":92100000,"k":158446,"d":54360,"vs":8297146,"hq":25},{"n":"Laong Laan","rp":36,"p":92000000,"k":99556,"d":48480,"vs":5859626,"hq":25},{"n":"Lycanh","rp":37,"p":91900000,"k":221297,"d":28200,"vs":5811483,"hq":26},{"n":"JJORGE","rp":38,"p":91800000,"k":80929,"d":56200,"vs":9508031,"hq":25},{"n":"Texastacofien","rp":39,"p":91700000,"k":27630,"d":61920,"vs":7827954,"hq":24},{"n":"Aw oragaul","rp":40,"p":91600000,"k":577883,"d":59040,"vs":15456095,"hq":27},{"n":"子宣","rp":41,"p":90100000,"k":37955,"d":55800,"vs":5858604,"hq":25},{"n":"Sima-balzcrashr","rp":42,"p":90000000,"k":103795,"d":50060,"vs":10697273,"hq":24},{"n":"JLITENG","rp":43,"p":88900000,"k":93167,"d":54660,"vs":9106064,"hq":24},{"n":"Pilgrim","rp":44,"p":88700000,"k":47570,"d":25440,"vs":15803020,"hq":25},{"n":"卡拉賓","rp":45,"p":88400000,"k":116872,"d":50440,"vs":9683712,"hq":26},{"n":"-LiGhTbOrN-","rp":46,"p":87900000,"k":455616,"d":21240,"vs":7734989,"hq":26},{"n":"LATAN","rp":47,"p":87500000,"k":43331,"d":42500,"vs":4078642,"hq":25},{"n":"RIKASI","rp":48,"p":87400000,"k":122841,"d":62120,"vs":8666277,"hq":25},{"n":"KluczyK","rp":49,"p":87400000,"k":243021,"d":46800,"vs":7424231,"hq":26},{"n":"Burgerakos","rp":50,"p":86400000,"k":226207,"d":29280,"vs":8653593,"hq":25},{"n":"SkyMineee","rp":51,"p":86300000,"k":345950,"d":48240,"vs":9466893,"hq":24},{"n":"kbs gamesyt","rp":52,"p":85200000,"k":63413,"d":45000,"vs":4030712,"hq":25},{"n":"Bellos","rp":53,"p":85100000,"k":661223,"d":39480,"vs":3952350,"hq":26},{"n":"Knight-Rod","rp":54,"p":84200000,"k":117995,"d":37800,"vs":12629384,"hq":25},{"n":"Araashi","rp":55,"p":82900000,"k":195008,"d":21480,"vs":4503316,"hq":25},{"n":"Lex-i","rp":56,"p":82900000,"k":202303,"d":10680,"vs":4039936,"hq":25},{"n":"Cantikakara","rp":57,"p":82700000,"k":452206,"d":63960,"vs":15477556,"hq":27},{"n":"MAN-MACHINE","rp":58,"p":82700000,"k":443451,"d":46580,"vs":3257759,"hq":26},{"n":"DrCrosz","rp":59,"p":82700000,"k":156843,"d":39760,"vs":4637473,"hq":25},{"n":"Garferr","rp":60,"p":81800000,"k":69619,"d":49320,"vs":2623426,"hq":25},{"n":"ankit62","rp":61,"p":81600000,"k":601522,"d":9240,"vs":2322831,"hq":26},{"n":"GKAR","rp":62,"p":80300000,"k":427389,"d":31440,"vs":13256328,"hq":25},{"n":"todorov","rp":63,"p":80000000,"k":56950,"d":44280,"vs":1079543,"hq":25},{"n":"Baby drvu","rp":64,"p":79900000,"k":262187,"d":49680,"vs":5569904,"hq":25},{"n":"Onde-onde","rp":65,"p":79800000,"k":249517,"d":42140,"vs":6377233,"hq":25},{"n":"Mr SRiNU","rp":66,"p":79000000,"k":78162,"d":34320,"vs":9013804,"hq":24},{"n":"RaenyDaze","rp":67,"p":78900000,"k":8695,"d":31320,"vs":10646389,"hq":25},{"n":"°TiaN°","rp":68,"p":78900000,"k":307990,"d":50880,"vs":8452782,"hq":25},{"n":"○・○","rp":69,"p":77900000,"k":173224,"d":56160,"vs":9713310,"hq":25},{"n":"angel1414","rp":70,"p":77800000,"k":277129,"d":55240,"vs":2263796,"hq":25},{"n":"BIG BEAR 1","rp":71,"p":77500000,"k":46818,"d":46680,"vs":4488442,"hq":24},{"n":"YUDISTIRAWIJAYA","rp":72,"p":76800000,"k":177750,"d":52660,"vs":13588476,"hq":25},{"n":"SULCATA","rp":73,"p":76300000,"k":249636,"d":23280,"vs":1609612,"hq":25},{"n":"Gethuk Lindri","rp":74,"p":76200000,"k":38654,"d":41540,"vs":7271549,"hq":25},{"n":"ScobyDoo","rp":75,"p":74000000,"k":633432,"d":38160,"vs":7707091,"hq":26},{"n":"JAXH THE SLAYER","rp":76,"p":73600000,"k":69875,"d":50280,"vs":9719769,"hq":24},{"n":"KyōTo","rp":77,"p":73500000,"k":456467,"d":29640,"vs":4445176,"hq":26},{"n":"Sava81","rp":78,"p":72900000,"k":8987,"d":3600,"vs":930649,"hq":24},{"n":"Gabbar sher","rp":79,"p":72800000,"k":177372,"d":42480,"vs":6232662,"hq":25},{"n":"Rara zii","rp":80,"p":72100000,"k":38828,"d":35760,"vs":7143909,"hq":24},{"n":"I m X","rp":81,"p":72100000,"k":973331,"d":61080,"vs":5919857,"hq":26},{"n":"DeniM","rp":82,"p":71100000,"k":50222,"d":25500,"vs":1480496,"hq":24},{"n":"Mhiu96","rp":83,"p":70500000,"k":261406,"d":36120,"vs":9266220,"hq":26},{"n":"КЕЙ","rp":84,"p":70300000,"k":247463,"d":49420,"vs":7954681,"hq":25},{"n":"soor","rp":85,"p":70300000,"k":393694,"d":40200,"vs":10219687,"hq":26},{"n":"PANAGIOTHS 1","rp":86,"p":69700000,"k":98418,"d":36280,"vs":6870542,"hq":25},{"n":"Black 05","rp":87,"p":69700000,"k":34537,"d":45500,"vs":12108938,"hq":25},{"n":"Doom11","rp":88,"p":68200000,"k":17297,"d":30840,"vs":1761088,"hq":25},{"n":"SR 873","rp":89,"p":67900000,"k":319109,"d":48780,"vs":8034386,"hq":25},{"n":"salvador FC","rp":90,"p":67200000,"k":232000,"d":41180,"vs":6138682,"hq":25},{"n":"Leyla Rootmade","rp":91,"p":67099999,"k":98652,"d":28000,"vs":5170596,"hq":24},{"n":"Femor","rp":92,"p":65400000,"k":136830,"d":45600,"vs":5381366,"hq":25},{"n":"ThanatosU","rp":93,"p":63400000,"k":41619,"d":12000,"vs":3087861,"hq":24},{"n":"Andrea 71","rp":94,"p":63300000,"k":0,"d":1920,"vs":null,"hq":24},{"n":"Setroc11","rp":95,"p":63200000,"k":126978,"d":3840,"vs":2061951,"hq":25},{"n":"moon 20","rp":96,"p":62400000,"k":229433,"d":47040,"vs":8754852,"hq":26},{"n":"shiva120","rp":97,"p":61200000,"k":44289,"d":40040,"vs":7469804,"hq":25},{"n":"deviLLucky","rp":98,"p":59400000,"k":121954,"d":15460,"vs":9640307,"hq":24},{"n":"BanikJnr","rp":99,"p":57400000,"k":199116,"d":49800,"vs":9541004,"hq":25},{"n":"Abed joma120","rp":100,"p":55400000,"k":171184,"d":47880,"vs":13680436,"hq":25}];
+const DATA_LOCAL = [{"n":"LAKIDIO","p":176500000,"hq":29,"k":1978163,"d":166080,"vs":58798482,"atvs":123305314,"rp":1},{"n":"Vaelis","p":151700000,"hq":29,"k":2718625,"d":73540,"vs":25863915,"atvs":99597362,"rp":2},{"n":"Mythos","p":151400000,"hq":27,"k":885028,"d":104980,"vs":78650325,"atvs":149803521,"rp":3},{"n":"LUSi","p":147900000,"hq":28,"k":1095038,"d":112080,"vs":37047601,"atvs":78647836,"rp":4},{"n":"Anatselo7","p":136300000,"hq":27,"k":762962,"d":127460,"vs":31671722,"atvs":56584794,"rp":5},{"n":"Araneo","p":132500000,"hq":27,"k":257956,"d":86140,"vs":9468924,"atvs":19888042,"rp":6},{"n":"Healerrr","p":132300000,"hq":27,"k":832804,"d":130160,"vs":64220553,"atvs":175080703,"rp":7},{"n":"KiraFrost","p":118500000,"hq":27,"k":894805,"d":69960,"vs":14044344,"atvs":14044344,"rp":8},{"n":"Marcela","p":115200000,"hq":26,"k":0,"d":43320,"vs":7306814,"atvs":7306814,"rp":9},{"n":"Tertullian","p":114400000,"hq":25,"k":166158,"d":71040,"vs":17660170,"atvs":33777231,"rp":10},{"n":"Spidergas","p":108100000,"hq":25,"k":147642,"d":91120,"vs":24062995,"atvs":65217327,"rp":11},{"n":"Silent BoB","p":107200000,"hq":26,"k":255387,"d":92760,"vs":11130720,"atvs":21368670,"rp":12},{"n":"IRON ROSE","p":106900000,"hq":27,"k":480771,"d":100320,"vs":19091518,"atvs":58883279,"rp":13},{"n":"Daanicaa","p":105600000,"hq":25,"k":132243,"d":83400,"vs":19693880,"atvs":48702992,"rp":14},{"n":"Phobuki","p":105300000,"hq":26,"k":316732,"d":105840,"vs":21631973,"atvs":70940967,"rp":15},{"n":"Dimi92","p":102600000,"hq":25,"k":140564,"d":126720,"vs":10981742,"atvs":23971352,"rp":16},{"n":"Pramheda","p":102200000,"hq":26,"k":283988,"d":114480,"vs":27387478,"atvs":83831173,"rp":17},{"n":"iKoren","p":102100000,"hq":27,"k":727236,"d":78480,"vs":22023664,"atvs":68857404,"rp":18},{"n":"FinnWolf","p":101000000,"hq":25,"k":102489,"d":111800,"vs":18025180,"atvs":38162130,"rp":19},{"n":"KillaFish","p":100600000,"hq":27,"k":565427,"d":77640,"vs":26339161,"atvs":51895877,"rp":20},{"n":"aurelll","p":100400000,"hq":26,"k":729229,"d":96360,"vs":10745879,"atvs":38103287,"rp":21},{"n":"hoodmell2","p":99400000,"hq":26,"k":58584,"d":61200,"vs":8181837,"atvs":13574616,"rp":22},{"n":"Bellos","p":99300000,"hq":27,"k":661223,"d":85800,"vs":11427117,"atvs":23685379,"rp":23},{"n":"Yehoshuaa","p":98800000,"hq":25,"k":371587,"d":82640,"vs":18307992,"atvs":71897897,"rp":24},{"n":"Aw oragaul","p":98600000,"hq":27,"k":577883,"d":84840,"vs":18235490,"atvs":93388822,"rp":25},{"n":"Texastacofien","p":98200000,"hq":24,"k":27630,"d":106920,"vs":10379753,"atvs":21383070,"rp":26},{"n":"NADAELSA","p":97800000,"hq":26,"k":258657,"d":83140,"vs":12088456,"atvs":42440158,"rp":27},{"n":"NV Forever","p":97700000,"hq":26,"k":202467,"d":66600,"vs":11371699,"atvs":25182714,"rp":28},{"n":"MythosJr","p":97700000,"hq":26,"k":293020,"d":42020,"vs":7054512,"atvs":12231622,"rp":29},{"n":"Jeal","p":97500000,"hq":25,"k":42568,"d":60680,"vs":14101343,"atvs":48313178,"rp":30},{"n":"Saifkhank55","p":97000000,"hq":25,"k":218561,"d":91820,"vs":13525207,"atvs":25372617,"rp":31},{"n":"WhaleofATime","p":96400000,"hq":27,"k":452206,"d":92160,"vs":20205198,"atvs":75313638,"rp":32},{"n":"Aya57","p":95400000,"hq":26,"k":116880,"d":84960,"vs":18260212,"atvs":37666787,"rp":33},{"n":"Laong Laan","p":94200000,"hq":25,"k":99556,"d":93480,"vs":9308268,"atvs":17116940,"rp":34},{"n":"Macarr","p":94100000,"hq":25,"k":567783,"d":99300,"vs":25994047,"atvs":81152952,"rp":35},{"n":"Sima-balzcrashr","p":93800000,"hq":24,"k":103795,"d":93620,"vs":14769760,"atvs":37432850,"rp":36},{"n":"Doler G","p":93300000,"hq":26,"k":547220,"d":36660,"vs":19826434,"atvs":58039939,"rp":37},{"n":"JJORGE","p":93000000,"hq":25,"k":80929,"d":94440,"vs":14037339,"atvs":15979922,"rp":38},{"n":"LATAN","p":92100000,"hq":25,"k":43331,"d":81020,"vs":6523800,"atvs":14000764,"rp":39},{"n":"Pilgrim","p":92000000,"hq":25,"k":47570,"d":65400,"vs":22333914,"atvs":25436513,"rp":40},{"n":"KluczyK","p":91700000,"hq":26,"k":243021,"d":73200,"vs":11619702,"atvs":27449043,"rp":41},{"n":"°TiaN°","p":91200000,"hq":25,"k":307990,"d":88200,"vs":12760584,"atvs":28231311,"rp":42},{"n":"子宣","p":91000000,"hq":25,"k":37955,"d":100320,"vs":7769664,"atvs":7769664,"rp":43},{"n":"卡拉賓","p":90000000,"hq":26,"k":116872,"d":86260,"vs":12729762,"atvs":29841239,"rp":44},{"n":"fatezero87","p":89800000,"hq":25,"k":202561,"d":74520,"vs":11709682,"atvs":22055326,"rp":45},{"n":"GKAR","p":87400000,"hq":25,"k":427389,"d":63240,"vs":25071167,"atvs":65410416,"rp":46},{"n":"-LiGhTbOrN-","p":87200000,"hq":26,"k":455616,"d":50280,"vs":14701518,"atvs":48216885,"rp":47},{"n":"YUDISTIRAWIJAYA","p":86800000,"hq":25,"k":177750,"d":79400,"vs":16065072,"atvs":35093266,"rp":48},{"n":"Mr SRiNU","p":86400000,"hq":25,"k":78162,"d":63720,"vs":11030656,"atvs":23288271,"rp":49},{"n":"Araashi","p":86400000,"hq":25,"k":195008,"d":37320,"vs":6818091,"atvs":10148491,"rp":50},{"n":"kbs gamesyt","p":86400000,"hq":26,"k":63413,"d":91080,"vs":5750264,"atvs":10834764,"rp":51},{"n":"Lex-i","p":85700000,"hq":25,"k":202303,"d":33600,"vs":5496553,"atvs":5496553,"rp":52},{"n":"Lycanh","p":85200000,"hq":26,"k":221297,"d":48840,"vs":6628913,"atvs":15436699,"rp":53},{"n":"DrCrosz","p":84700000,"hq":25,"k":156843,"d":66400,"vs":5735841,"atvs":19859554,"rp":54},{"n":"Mr oxygen","p":84600000,"hq":25,"k":158446,"d":94560,"vs":11733594,"atvs":24151405,"rp":55},{"n":"Gethuk Lindri","p":84400000,"hq":25,"k":38654,"d":77920,"vs":8704303,"atvs":22523597,"rp":56},{"n":"○・○","p":84300000,"hq":25,"k":173224,"d":85920,"vs":20274723,"atvs":38054370,"rp":57},{"n":"BIG BEAR 1","p":84000000,"hq":24,"k":46818,"d":90360,"vs":11075559,"atvs":24302449,"rp":58},{"n":"Garferr","p":83400000,"hq":25,"k":69619,"d":98280,"vs":3648565,"atvs":13152539,"rp":59},{"n":"angel1414","p":83100000,"hq":25,"k":277129,"d":90160,"vs":4217933,"atvs":8190655,"rp":60},{"n":"Baby drvu","p":80300000,"hq":26,"k":262187,"d":91440,"vs":13160050,"atvs":25164163,"rp":61},{"n":"Black 05","p":79800000,"hq":25,"k":34537,"d":92940,"vs":14727987,"atvs":46017090,"rp":62},{"n":"Gabbar sher","p":79200000,"hq":25,"k":177372,"d":71280,"vs":7712735,"atvs":15040817,"rp":63},{"n":"RaenyDaze","p":78900000,"hq":25,"k":8695,"d":69480,"vs":15777682,"atvs":29200959,"rp":64},{"n":"ScobyDoo","p":78800000,"hq":26,"k":633432,"d":62160,"vs":9101404,"atvs":52622003,"rp":65},{"n":"David 0001","p":78300000,"hq":25,"k":217007,"d":88560,"vs":11030220,"atvs":23063324,"rp":66},{"n":"Onde-onde","p":76700000,"hq":26,"k":249517,"d":78460,"vs":12443461,"atvs":43344676,"rp":67},{"n":"YaiYai8989","p":76500000,"hq":25,"k":229241,"d":83400,"vs":11214662,"atvs":42900080,"rp":68},{"n":"PANAGIOTHS 1","p":76500000,"hq":25,"k":98418,"d":56680,"vs":8544856,"atvs":21601668,"rp":69},{"n":"SULCATA","p":76400000,"hq":25,"k":249636,"d":42120,"vs":2151021,"atvs":5930632,"rp":70},{"n":"Knight-Rod","p":74900000,"hq":25,"k":117995,"d":79560,"vs":17016691,"atvs":24311995,"rp":71},{"n":"DeniM","p":74800000,"hq":24,"k":50222,"d":44700,"vs":2214902,"atvs":2972407,"rp":72},{"n":"КЕЙ","p":73400000,"hq":25,"k":247463,"d":94900,"vs":15906317,"atvs":42719919,"rp":73},{"n":"Abed joma120","p":73300000,"hq":25,"k":171184,"d":91440,"vs":22001741,"atvs":44024737,"rp":74},{"n":"Femor","p":71500000,"hq":25,"k":136830,"d":83400,"vs":10956668,"atvs":21920483,"rp":75},{"n":"Rara zii","p":71300000,"hq":24,"k":38828,"d":56880,"vs":9553160,"atvs":31373565,"rp":76},{"n":"RIKASI","p":70500000,"hq":25,"k":122841,"d":115360,"vs":16068949,"atvs":25815519,"rp":77},{"n":"I m X","p":70200000,"hq":26,"k":973331,"d":100200,"vs":25785647,"atvs":25785647,"rp":78},{"n":"soor","p":69900000,"hq":26,"k":393694,"d":85560,"vs":16073372,"atvs":48248096,"rp":79},{"n":"Doom11","p":69800000,"hq":25,"k":17297,"d":58200,"vs":2519584,"atvs":6962284,"rp":80},{"n":"BanikJnr","p":69100000,"hq":25,"k":199116,"d":75480,"vs":13425901,"atvs":18479615,"rp":81},{"n":"Leyla Rootmade","p":67600000,"hq":24,"k":98652,"d":52720,"vs":6151677,"atvs":14186126,"rp":82},{"n":"SR 873","p":67500000,"hq":25,"k":319109,"d":89100,"vs":11551965,"atvs":40961432,"rp":83},{"n":"ankit62","p":66800000,"hq":26,"k":601522,"d":9240,"vs":3370210,"atvs":20233065,"rp":84},{"n":"MAN-MACHINE","p":66500000,"hq":26,"k":443451,"d":87280,"vs":10089709,"atvs":20144942,"rp":85},{"n":"Sava81","p":66300000,"hq":24,"k":8987,"d":17440,"vs":4253290,"atvs":12964243,"rp":86},{"n":"Setroc11","p":65599999,"hq":25,"k":126978,"d":7320,"vs":5516637,"atvs":11505080,"rp":87},{"n":"KyōTo","p":63600000,"hq":26,"k":456467,"d":63240,"vs":15514488,"atvs":58144501,"rp":88},{"n":"Andrea 71","p":63600000,"hq":24,"k":0,"d":41280,"vs":1545535,"atvs":1545535,"rp":89},{"n":"salvador FC","p":61900000,"hq":25,"k":232000,"d":72620,"vs":11140088,"atvs":19849239,"rp":90},{"n":"JAXH THE SLAYER","p":61200000,"hq":24,"k":69875,"d":78960,"vs":13060924,"atvs":33547331,"rp":91},{"n":"JLITENG","p":58600000,"hq":24,"k":93167,"d":94860,"vs":13496226,"atvs":39299931,"rp":92},{"n":"UnHoly","p":57800000,"hq":26,"k":899247,"d":83040,"vs":31528275,"atvs":67408761,"rp":93},{"n":"Burgerakos","p":54900000,"hq":25,"k":226207,"d":61320,"vs":12945670,"atvs":30801430,"rp":94},{"n":"ThanatosU","p":54300000,"hq":24,"k":41619,"d":18720,"vs":6725573,"atvs":11690976,"rp":95},{"n":"LLucky","p":51100000,"hq":24,"k":0,"d":35020,"vs":13036317,"atvs":28000268,"rp":96},{"n":"Mhiu96","p":50300000,"hq":26,"k":261406,"d":57360,"vs":14899153,"atvs":14899153,"rp":97},{"n":"shiva120","p":49900000,"hq":25,"k":44289,"d":74460,"vs":12175012,"atvs":22968806,"rp":98},{"n":"moon 20","p":46200000,"hq":26,"k":229433,"d":76920,"vs":14605254,"atvs":31934156,"rp":99},{"n":"SkyMineee","p":38000000,"hq":24,"k":345950,"d":61320,"vs":12325985,"atvs":35622516,"rp":100}];
 let DATA = DATA_LOCAL;
 const UMBRAL_B1 = 70e6, UMBRAL_B2 = 95e6;
 const PISO_BASE = 5e6, PISO_ALTO = 7e6; /* mínimo VS semanal: <95M poder → 5M · 95M+ → 7M */
@@ -480,7 +517,7 @@ const FRAC_VS = DIA_VS/6;
 const ES_FINAL = FRAC_VS>=1;
 const COL = {1:"#8FA9C4", 2:"#E8B04B", 3:"#F2A3B3"};
 /* Nuevos ingresos: escudo de novato — VS y donación de la semana no cuentan */
-let NUEVOS = {"KiraFrost":"22-jul-2026","Andrea 71":"23-jul-2026"};
+let NUEVOS = {"Andrea 71":"23-jul-2026","LLucky":"26-jul-2026","Marcela":"26-jul-2026"};
 /* Poder al inicio de la semana (dom 20-jul) para medir crecimiento */
 const PODER_PREV = {"LAKIDIO":182375626,"Vaelis":144013256,"Mythos":135837735,"LUSi":129856354,"Araneo":125840396,"Anatselo7":124932739,"Doler G":119612827,"KiraFrost":114039322,"Tertullian":112074363,"iKoren":109424319,"Healerrr":105282535,"Silent BoB":103582166,"IRON ROSE":103561157,"Pramheda":103497177,"NV Forever":103106119,"Daanicaa":102604034,"NADAELSA":102412252,"Phobuki":102019658,"aurelll":101432993,"hoodmell2":100129556,"FinnWolf":100033012,"Aya57":98798896,"Yehoshuaa":95758107,"MythosJr":95558511,"Saifkhank55":94667692,"Macarr":94666524,"Dimi92":94451743,"KillaFish":94205654,"fatezero87":93929653,"Spidergas":93821821,"Lycanh":93588282,"YaiYai8989":93210716,"UnHoly":92800394,"Jeal":92031292,"David 0001":91160133,"JJORGE":91141927,"Laong Laan":90933012,"Mr oxygen":90784265,"Aw oragaul":90740360,"Texastacofien":90618915,"JLITENG":88841693,"子宣":88595868,"Sima-balzcrashr":88544737,"LATAN":87204759,"Pilgrim":86930715,"卡拉賓":86394189,"kbs gamesyt":85114644,"RIKASI":84683106,"Burgerakos":84271169,"-LiGhTbOrN-":84044751,"KluczyK":83895532,"SkyMineee":83288260,"DrCrosz":82362035,"Araashi":82346475,"Bellos":82288776,"Knight-Rod":82156826,"Cantikakara":81825380,"ankit62":81689217,"Onde-onde":80595196,"Lex-i":80577565,"angel1414":80482234,"Garferr":80217956,"MAN-MACHINE":80132199,"RaenyDaze":78037317,"GKAR":77954342,"BIG BEAR 1":77316335,"Gethuk Lindri":76897020,"SULCATA":76225296,"Baby drvu":76205593,"Mr SRiNU":76153580,"todorov":75065583,"○・○":74517591,"°TiaN°":74315046,"KyōTo":73564341,"JAXH THE SLAYER":73130622,"Sava81":72915198,"YUDISTIRAWIJAYA":72744163,"ScobyDoo":72145083,"Rara zii":71616643,"I m X":70689179,"Gabbar sher":70309224,"DeniM":69910296,"soor":69597737,"КЕЙ":67899887,"Doom11":67727630,"PANAGIOTHS 1":67502806,"Black 05":67498535,"Leyla Rootmade":66843823,"SR 873":65240489,"salvador FC":64429347,"Mhiu96":64238300,"ThanatosU":63442992,"Setroc11":63167253,"Femor":62278186,"shiva120":59863021,"moon 20":59158368,"deviLLucky":57308014,"BanikJnr":55480857,"Abed joma120":52960203};
 
@@ -680,7 +717,8 @@ function abrePerfil(nombre){
       (jugador.cumpleMin
         ? `<span class="pct-ok">✔ ${ES_FINAL?"Meets "+fM(jugador.piso):"On pace — "+fM(jugador.vs)+" vs "+fM(jugador.pisoHoy)+" needed today"}</span>`
         : `<span class="pct-bad">✘ ${ES_FINAL?"Below "+fM(jugador.piso):"Behind — needs "+fM(jugador.pisoHoy)+" today (weekly "+fM(jugador.piso)+")"}</span>`)],
-    ["VS Points (partial)", `<span class="${clasePct(jugador.vsPct)}">${fM(jugador.vs)} · ${fP(jugador.vsPct)} of min</span>`],
+    ["Weekly VS", `<span class="${clasePct(jugador.vsPct)}">${fM(jugador.vs)} · ${fP(jugador.vsPct)} of min</span>`],
+    ["All-Time VS (alliance)", jugador.atvs==null ? "—" : fM(jugador.atvs)],
     ["Weekly donation", fN(jugador.d)],
     ["Cumulative kills", fN(jugador.k)],
     ["Kills per M power", jugador.kpm==null?"—":fN(Math.round(jugador.kpm))],
@@ -1062,6 +1100,24 @@ document.getElementById("sec-prioridades")?.addEventListener("click",e=>{
 });
 
 /* ---------- Mensaje personal por jugador (lenguaje simple) ---------- */
+async function copia(txt, btn){
+  const original = btn ? btn.textContent : "";
+  try{
+    await navigator.clipboard.writeText(txt);
+    if(btn){ btn.textContent = "\u2713 Copied!"; setTimeout(()=>btn.textContent=original, 1500); }
+  }catch(e){
+    // Fallback para navegadores sin clipboard API (o sin HTTPS)
+    try{
+      const ta=document.createElement("textarea");
+      ta.value=txt; ta.style.position="fixed"; ta.style.opacity="0";
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      document.execCommand("copy"); document.body.removeChild(ta);
+      if(btn){ btn.textContent="\u2713 Copied!"; setTimeout(()=>btn.textContent=original,1500); }
+    }catch(e2){
+      window.prompt("Copy the message:", txt);
+    }
+  }
+}
 function msgPersonal(p){
   const dias = Math.max(1, 6 - DIA_VS);
   if(NUEVOS[p.n]){
@@ -1191,25 +1247,157 @@ async function cargaSheet(){
 
 /* ---------- Tabs ---------- */
 (function(){
-  const bS=document.getElementById("tabBtnSemana"), bH=document.getElementById("tabBtnHistoria");
-  const vS=document.getElementById("tabSemana"), vH=document.getElementById("tabHistoria");
-  function activa(hist){
-    vS.hidden=hist; vH.hidden=!hist;
-    bS.classList.toggle("on",!hist); bH.classList.toggle("on",hist);
-    if(hist) cargaHistoria();
+  const tabs = {
+    semana:  {b:"tabBtnSemana",  v:"tabSemana"},
+    hq:      {b:"tabBtnHQ",      v:"tabHQ"},
+    historia:{b:"tabBtnHistoria",v:"tabHistoria"},
+  };
+  function activa(cual){
+    Object.entries(tabs).forEach(([k,t])=>{
+      document.getElementById(t.v).hidden = (k!==cual);
+      document.getElementById(t.b).classList.toggle("on", k===cual);
+    });
+    if(cual==="historia") cargaHistoria();
+    if(cual==="hq") pintaHQBoard();
     window.scrollTo({top:0});
   }
-  bS.addEventListener("click",()=>activa(false));
-  bH.addEventListener("click",()=>activa(true));
-  document.querySelectorAll("#nav a[data-nav]").forEach(a=>a.addEventListener("click",()=>activa(false)));
+  document.getElementById("tabBtnSemana").addEventListener("click",()=>activa("semana"));
+  document.getElementById("tabBtnHQ").addEventListener("click",()=>activa("hq"));
+  document.getElementById("tabBtnHistoria").addEventListener("click",()=>activa("historia"));
+  document.querySelectorAll("#nav a[data-nav]").forEach(a=>a.addEventListener("click",()=>activa("semana")));
+  window._activaTab = activa;
 })();
+
+/* ---------- HQ Board (semáforo por nivel de HQ) ---------- */
+function pintaHQBoard(){
+  const cont = document.getElementById("hqBoard");
+  if(!cont) return;
+  const A = DATA.filter(p=>!NUEVOS[p.n] && p.vs!=null && p.hq!=null);
+  const porHQ = {};
+  A.forEach(p=>{ (porHQ[p.hq]=porHQ[p.hq]||[]).push(p); });
+  const niveles = Object.keys(porHQ).map(Number).sort((a,b)=>b-a);
+  cont.innerHTML = niveles.map(h=>{
+    const g = porHQ[h];
+    const estado = p=>{ const piso=p.p>=95e6?PISO_ALTO:PISO_BASE;
+      if(p.vs>=piso) return "g"; if(p.vs>=piso*0.6) return "y"; return "r"; };
+    const verde = g.filter(p=>estado(p)==="g");
+    const amar  = g.filter(p=>estado(p)==="y");
+    const rojo  = g.filter(p=>estado(p)==="r");
+    const n=g.length;
+    const pctG = Math.round(verde.length/n*100);
+    const veredicto = pctG>=80 ? ["HEALTHY","var(--verde)"]
+                    : pctG>=55 ? ["WATCH","var(--ambar)"]
+                    : ["NEEDS ACTION","var(--rojo)"];
+    const link = arr => arr.slice(0,6).map(p=>`<a data-n="${p.n}">${p.n}</a>`).join(", ")
+                 + (arr.length>6?` +${arr.length-6}`:"");
+    let reco = "";
+    if(rojo.length) reco += `<b>Below minimum:</b> ${link(rojo.sort((a,b)=>a.vs-b.vs))}. `;
+    if(amar.length) reco += `<b>Close (nudge):</b> ${link(amar.sort((a,b)=>a.vs-b.vs))}. `;
+    if(!rojo.length && !amar.length) reco = `<b>All clear</b> — every HQ ${h} member cleared the minimum. Praise them.`;
+    const seg = (arr,cls)=> arr.length? `<span class="hqb-${cls} hqb-seg" data-hq="${h}" data-est="${cls}" style="width:${arr.length/n*100}%"></span>`:"";
+    return `<div class="hqb-fila">
+      <div class="hqb-cab">
+        <span class="niv">HQ ${h}</span>
+        <span class="cnt">${n} member${n>1?"s":""}</span>
+        <span class="verdict" style="color:${veredicto[1]}">${veredicto[0]} · ${pctG}% meeting min</span>
+      </div>
+      <div class="hqb-barra">${seg(verde,"g")}${seg(amar,"y")}${seg(rojo,"r")}</div>
+      <div class="hqb-nums">
+        <span class="g hqb-chip" data-hq="${h}" data-est="g">✔ ${verde.length} meeting</span>
+        <span class="y hqb-chip" data-hq="${h}" data-est="y">◐ ${amar.length} close</span>
+        <span class="r hqb-chip" data-hq="${h}" data-est="r">✘ ${rojo.length} below</span>
+      </div>
+      <div class="hqb-lista" id="hqbl-${h}" hidden></div>
+      <div class="hqb-reco">${reco}</div>
+    </div>`;
+  }).join("");
+  pintaHQBoard._grupos = {};
+  niveles.forEach(h=>{
+    const g=porHQ[h];
+    const est=p=>{ const piso=p.p>=95e6?PISO_ALTO:PISO_BASE; return p.vs>=piso?"g":(p.vs>=piso*0.6?"y":"r"); };
+    pintaHQBoard._grupos[h]={
+      g:g.filter(p=>est(p)==="g").sort((a,b)=>b.vs-a.vs),
+      y:g.filter(p=>est(p)==="y").sort((a,b)=>a.vs-b.vs),
+      r:g.filter(p=>est(p)==="r").sort((a,b)=>a.vs-b.vs),
+    };
+  });
+  const etiqueta={g:"Meeting the minimum",y:"Close — needs a nudge",r:"Below the minimum"};
+  function abre(n){ window._activaTab("semana"); abrePerfil(n);
+    document.getElementById("sec-perfil").scrollIntoView({behavior:"smooth"}); }
+  function toggle(h,est){
+    const box=document.getElementById("hqbl-"+h); if(!box) return;
+    if(box.dataset.est===est && !box.hidden){ box.hidden=true; box.dataset.est=""; return; }
+    const arr=(pintaHQBoard._grupos[h]||{})[est]||[];
+    box.dataset.est=est;
+    box.innerHTML=`<div class="hqb-lista-tit hqb-${est}t">${etiqueta[est]} · ${arr.length}</div>`+
+      (arr.length?arr.map(p=>{ const piso=p.p>=95e6?PISO_ALTO:PISO_BASE;
+        return `<div class="hqb-lrow"><a data-n="${p.n}">${p.n}</a><span>${fM(p.vs)} <span style="opacity:.5">/ ${fM(piso)}</span></span></div>`;
+      }).join(""):'<div style="opacity:.6;padding:4px 0">none</div>');
+    box.hidden=false;
+    box.querySelectorAll("a[data-n]").forEach(a=>a.addEventListener("click",()=>abre(a.dataset.n)));
+  }
+  cont.querySelectorAll(".hqb-seg,.hqb-chip").forEach(el=>el.addEventListener("click",()=>toggle(el.dataset.hq,el.dataset.est)));
+  cont.querySelectorAll(".hqb-reco a[data-n]").forEach(a=>a.addEventListener("click",()=>abre(a.dataset.n)));
+}
 
 /* ---------- Total History ---------- */
 let histCargada=false;
-async function cargaHistoria(){
+function filasHistoria(){
+  /* combina el historial embebido + lo que venga del sheet (this.sheetRows) */
+  const base = HISTORIA_LOCAL.slice();
+  const extra = filasHistoria._sheet || [];
+  /* dedup por (semana, jugador): el sheet gana sobre el embebido */
+  const clave = r => r.w + "||" + r.n;
+  const map = new Map();
+  base.forEach(r=>map.set(clave(r), r));
+  extra.forEach(r=>map.set(clave(r), r));
+  return [...map.values()];
+}
+function renderHistoria(){
   const nota=document.getElementById("histNota"), panel=document.getElementById("histPanel");
-  if(!SHEET_HISTORY_CSV_URL){ return; }
-  if(histCargada) return;
+  const rows = filasHistoria();
+  if(!rows.length){ return; }
+  const porJug={}; const semanas=[];
+  rows.forEach(r0=>{
+    const n=(r0.n||"").trim(); if(!n) return;
+    if(!semanas.includes(r0.w)) semanas.push(r0.w);
+    const piso=(r0.pw??(DATA.find(x=>x.n===n)?.p||0)) >= 95e6 ? PISO_ALTO : PISO_BASE;
+    (porJug[n]=porJug[n]||[]).push({w:r0.w, vs:r0.vs, pw:r0.pw, dn:r0.dn, kl:r0.kl, hq:r0.hq, piso, bajo: r0.vs!=null && r0.vs<piso});
+  });
+  semanas.sort();
+  const filas=Object.keys(porJug).map(n=>{
+    const arr=porJug[n].sort((a,b)=>a.w<b.w?-1:1);
+    const vsArr=arr.filter(x=>x.vs!=null).map(x=>x.vs);
+    const tot=vsArr.reduce((a,b)=>a+b,0);
+    const avg=vsArr.length? tot/vsArr.length : null;
+    const bajoTot=arr.filter(x=>x.bajo).length;
+    let racha=0;
+    for(let i=arr.length-1;i>=0;i--){ if(arr[i].bajo) racha++; else break; }
+    const est = racha>=3?["Replacement candidate","est-3"]
+              : racha===2?["Formal warning","est-2"]
+              : racha===1?["Notice","est-1"]:["OK","est-ok"];
+    const pws=arr.filter(x=>x.pw!=null);
+    const crec = pws.length>1 ? (pws[pws.length-1].pw - pws[0].pw)/pws[0].pw*100 : null;
+    const dns=arr.filter(x=>x.dn!=null).map(x=>x.dn);
+    const avgDon = dns.length? dns.reduce((a,b)=>a+b,0)/dns.length : null;
+    const tend = vsArr.length>1 ? (vsArr[vsArr.length-1]-vsArr[0]) : null;
+    return {n, sem:arr.length, avg, tot, bajoTot, racha, est, crec, avgDon, tend};
+  }).sort((a,b)=>b.racha-a.racha || (b.avg??0)-(a.avg??0));
+  const head2="<tr><th>Player</th><th>Weeks</th><th>Avg VS</th><th>VS trend</th><th>Total VS</th><th>Avg don.</th><th>Power growth</th><th>Below min</th><th>Streak</th><th>Status</th></tr>";
+  const body=filas.map(f=>
+    `<tr><td class="nom" data-n="${f.n}">${f.n}</td><td>${f.sem}</td><td>${fM(f.avg)}</td>
+     <td class="${f.tend==null?"":f.tend>=0?"pct-ok":"pct-bad"}">${f.tend==null?"—":(f.tend>=0?"+":"−")+fM(Math.abs(f.tend))}</td>
+     <td>${fM(f.tot)}</td><td>${f.avgDon==null?"—":fN(Math.round(f.avgDon))}</td>
+     <td class="${f.crec==null?"":f.crec>=0.5?"pct-ok":"pct-mid"}">${f.crec==null?"—":(f.crec>=0?"+":"")+f.crec.toFixed(1)+"%"}</td>
+     <td>${f.bajoTot}</td><td>${f.racha}</td><td class="${f.est[1]}">${f.est[0]}</td></tr>`).join("");
+  document.getElementById("histTabla").innerHTML=head2+body;
+  const fuente = (filasHistoria._sheet && filasHistoria._sheet.length) ? " (embedded + live sheet)" : " (embedded)";
+  nota.innerHTML=`<b>${semanas.length} week(s) recorded${fuente}:</b> ${semanas.join(" · ")}. Escalation: 1 week below = Notice · 2 in a row = Formal warning · 3 in a row = Replacement candidate.`;
+  panel.hidden=false;
+}
+async function cargaHistoria(){
+  renderHistoria();               /* pinta ya con el historial embebido */
+  if(!SHEET_HISTORY_CSV_URL || histCargada) return;
   try{
     const sep=SHEET_HISTORY_CSV_URL.includes("?")?"&":"?";
     const r=await fetch(SHEET_HISTORY_CSV_URL+sep+"t="+Date.now(),{cache:"no-store"});
@@ -1222,51 +1410,16 @@ async function cargaHistoria(){
           iD=ix2("donacion","donation"), iK=ix2("kills","kills"), iH=ix2("hq","hq");
     if(iW<0||iN<0||iV<0) throw new Error("HISTORIA needs Semana, Jugador, VS");
     const num=s=>{ const d=String(s??"").replace(/[^\d]/g,""); return d?parseInt(d,10):null; };
-    const porJug={};
-    const semanas=[];
-    rows.slice(1).forEach(r0=>{
-      const n=(r0[iN]||"").trim(); if(!n) return;
-      const w=(r0[iW]||"").trim();
-      if(!semanas.includes(w)) semanas.push(w);
-      const pw=iP>=0?num(r0[iP]):null;
-      const vs=num(r0[iV]);
-      const dn=iD>=0?num(r0[iD]):null;
-      const kl=iK>=0?num(r0[iK]):null;
-      const hq=iH>=0?num(r0[iH]):null;
-      const piso=(pw??(DATA.find(x=>x.n===n)?.p||0)) >= 95e6 ? PISO_ALTO : PISO_BASE;
-      (porJug[n]=porJug[n]||[]).push({w, vs, pw, dn, kl, hq, piso, bajo: vs!=null && vs<piso});
-    });
-    const filas=Object.keys(porJug).map(n=>{
-      const arr=porJug[n];
-      const vsArr=arr.filter(x=>x.vs!=null).map(x=>x.vs);
-      const tot=vsArr.reduce((a,b)=>a+b,0);
-      const avg=vsArr.length? tot/vsArr.length : null;
-      const bajoTot=arr.filter(x=>x.bajo).length;
-      let racha=0;
-      for(let i=arr.length-1;i>=0;i--){ if(arr[i].bajo) racha++; else break; }
-      const est = racha>=3?["Replacement candidate","est-3"]
-                : racha===2?["Formal warning","est-2"]
-                : racha===1?["Notice","est-1"]:["OK","est-ok"];
-      const pws = arr.filter(x=>x.pw!=null);
-      const crec = pws.length>1 ? (pws[pws.length-1].pw - pws[0].pw)/pws[0].pw*100 : null;
-      const dns = arr.filter(x=>x.dn!=null).map(x=>x.dn);
-      const avgDon = dns.length? dns.reduce((a,b)=>a+b,0)/dns.length : null;
-      const tend = vsArr.length>1 ? (vsArr[vsArr.length-1]-vsArr[0]) : null;
-      return {n, sem:arr.length, avg, tot, bajoTot, racha, est, crec, avgDon, tend, ult:arr[arr.length-1]};
-    }).sort((a,b)=>b.racha-a.racha || (a.avg??0)-(b.avg??0));
-    const head2="<tr><th>Player</th><th>Weeks</th><th>Avg VS</th><th>VS trend</th><th>Total VS</th><th>Avg don.</th><th>Power growth</th><th>Below min</th><th>Streak</th><th>Status</th></tr>";
-    const body=filas.map(f=>
-      `<tr><td class="nom" data-n="${f.n}">${f.n}</td><td>${f.sem}</td><td>${fM(f.avg)}</td>
-       <td class="${f.tend==null?"":f.tend>=0?"pct-ok":"pct-bad"}">${f.tend==null?"—":(f.tend>=0?"+":"−")+fM(Math.abs(f.tend))}</td>
-       <td>${fM(f.tot)}</td><td>${f.avgDon==null?"—":fN(Math.round(f.avgDon))}</td>
-       <td class="${f.crec==null?"":f.crec>=0.5?"pct-ok":"pct-mid"}">${f.crec==null?"—":(f.crec>=0?"+":"")+f.crec.toFixed(1)+"%"}</td>
-       <td>${f.bajoTot}</td><td>${f.racha}</td><td class="${f.est[1]}">${f.est[0]}</td></tr>`).join("");
-    document.getElementById("histTabla").innerHTML=head2+body;
-    nota.innerHTML=`<b>${semanas.length} week(s) recorded:</b> ${semanas.join(" · ")}. Escalation: 1 week below = Notice · 2 in a row = Formal warning · 3 in a row = Replacement candidate.`;
-    panel.hidden=false;
+    filasHistoria._sheet = rows.slice(1).filter(r0=>r0[iN]&&r0[iN].trim()).map(r0=>({
+      w:(r0[iW]||"").trim(), n:(r0[iN]||"").trim(),
+      pw:iP>=0?num(r0[iP]):null, vs:num(r0[iV]),
+      dn:iD>=0?num(r0[iD]):null, kl:iK>=0?num(r0[iK]):null, hq:iH>=0?num(r0[iH]):null
+    }));
     histCargada=true;
+    renderHistoria();
   }catch(err){
-    nota.innerHTML='<b style="color:var(--ambar)">⚠ Could not read HISTORIA</b> ('+err.message+'). Check the published CSV URL and the headers (Semana, Jugador, Poder, VS).';
+    /* si el sheet falla, ya quedó pintado el historial embebido */
+    console.warn("HISTORIA sheet:", err.message);
   }
 }
 document.getElementById("histTabla")?.addEventListener("click",e=>{
