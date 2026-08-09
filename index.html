@@ -352,7 +352,7 @@ window.addEventListener("DOMContentLoaded", function(){
     <div class="fmly disp"><b>HALO LNH FMLY</b> · Survive together · answer together</div>
   </div>
   <div class="stamp">
-    <b class="disp" id="stampFecha">—</b> · <span style="opacity:.6">build 37</span><br>
+    <b class="disp" id="stampFecha">—</b> · <span style="opacity:.6">build 40</span><br>
     <span id="stampDetalle">100 members</span>
   </div>
 </header>
@@ -589,7 +589,7 @@ window.addEventListener("DOMContentLoaded", function(){
    3) Pega aquí la URL que termina en output=csv
    Si se deja vacío, el dashboard usa los datos embebidos de abajo.
    ============================================================ */
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRH_Dug9Xwq-MOcZxwG_DpeAhzgQJuTNVmc8gw6IgoDXcEz81M-3YhqMJ1E8ePz_zcwatscN952Fktp/pub?gid=1847105302&single=true&output=csv";
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS-8zUNQQ_AbWrIQ6WA4c9cpkp9SkM0jB9WERhb8R6ByRU1MxNi_mQdaZ0J-pzZoWqp6DLdkkoKVi2a/pub?output=csv";
 /* Pestaña HISTORIA publicada como CSV (Semana, Jugador, Poder, VS): */
 const SHEET_HISTORY_CSV_URL = "";
 /* Historial embebido (semanas ya cerradas). El Sheet HISTORIA, si se conecta, se AÑADE a esto. */
@@ -613,21 +613,30 @@ const PISO_BASE = PISO_SEMANAL, PISO_ALTO = PISO_SEMANAL;
 /* FECHA_DATOS = el día al que corresponde la información cargada (NO el día de hoy).
    Claude la fija en cada actualización. La semana VS va lunes(1)…sábado(6);
    sábado o domingo = semana cerrada → se evalúa el mínimo COMPLETO, no prorrateado. */
-const FECHA_DATOS = "2026-07-28";  // martes, W31 en curso (día 2/6)
-const DIA_VS = (()=>{
-  const d = new Date(FECHA_DATOS + "T12:00:00").getDay();  // 0=dom … 6=sáb
-  return d===0 ? 6 : d;  // domingo cuenta como semana cerrada (6)
-})();
-const FRAC_VS = DIA_VS/6;
-const ES_FINAL = FRAC_VS>=1;   // sábado(6) y domingo → mínimo completo
-/* etiqueta legible del día de los datos */
+let FECHA_DATOS = "2026-08-07";   // respaldo: se sobrescribe con la columna FechaDatos del Sheet
 const DIAS_ES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-const FECHA_LABEL = (()=>{
-  const dt=new Date(FECHA_DATOS+"T12:00:00");
-  const dd=DIAS_ES[dt.getDay()];
+let DIA_VS, FRAC_VS, ES_FINAL, FECHA_LABEL;
+function calculaFecha(){
+  const dt = new Date(FECHA_DATOS + "T12:00:00");
+  const d = dt.getDay();                    // 0=dom … 6=sáb
+  DIA_VS = d===0 ? 6 : d;                   // domingo cuenta como semana cerrada
+  FRAC_VS = DIA_VS/6;
+  ES_FINAL = FRAC_VS>=1;
   const mm=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][dt.getMonth()];
-  return `${dd}, ${mm} ${dt.getDate()}, ${dt.getFullYear()}`;
-})();
+  FECHA_LABEL = `${DIAS_ES[dt.getDay()]}, ${mm} ${dt.getDate()}, ${dt.getFullYear()}`;
+}
+calculaFecha();
+/* Cambia la fecha de captura y recalcula todo lo que depende de ella. */
+function fijaFechaDatos(txt){
+  if(!txt) return false;
+  let t = String(txt).trim();
+  const m = t.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);   // 07/08/2026 → 2026-08-07
+  if(m) t = m[3]+"-"+String(m[2]).padStart(2,"0")+"-"+String(m[1]).padStart(2,"0");
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(t)) return false;
+  if(t===FECHA_DATOS) return false;
+  FECHA_DATOS = t; calculaFecha();
+  return true;
+}
 const COL = {1:"#8FA9C4", 2:"#E8B04B", 3:"#F2A3B3"};
 /* Nuevos ingresos: escudo de novato — VS y donación de la semana no cuentan */
 let NUEVOS = {"-Tiam-": "28-jul-2026", "Bunny026": "28-jul-2026", "Flashaso": "28-jul-2026", "KLARA": "28-jul-2026", "todorov farm": "28-jul-2026", "愁厚猫": "28-jul-2026"};
@@ -1348,7 +1357,7 @@ document.querySelectorAll("#nav a[data-nav]").forEach(a=>a.addEventListener("cli
 }));
 
 /* Sello de fecha de los datos (basado en FECHA_DATOS, no en hoy) */
-(function(){
+function pintaSello(){
   const sf=document.getElementById("stampFecha"), sd=document.getElementById("stampDetalle");
   const at=document.getElementById("avisoTit"), ax=document.getElementById("avisoTxt"), fu=document.getElementById("fuente");
   const cerrada = ES_FINAL;
@@ -1359,7 +1368,8 @@ document.querySelectorAll("#nav a[data-nav]").forEach(a=>a.addEventListener("cli
     ? "These are the final weekly numbers; the VS minimum applies in full."
     : "VS is measured against pace (weekly minimum × "+DIA_VS+"/6). Final pass/fail is at Saturday close.";
   if(fu) fu.textContent = "Data date: " + FECHA_LABEL + ". Power officially updates Fridays.";
-})();
+}
+pintaSello();
 
 
 /* ---------- Descarga del Excel EN VIVO (generado al momento con SheetJS) ----------
@@ -1512,8 +1522,7 @@ async function cargaSheet(){
   if(!SHEET_CSV_URL||cargando) return;
   cargando=true;
   try{
-    const sep=SHEET_CSV_URL.includes("?")?"&":"?";
-    const r=await fetch(SHEET_CSV_URL+sep+"t="+Date.now(),{cache:"no-store"});
+    const r=await fetch(SHEET_CSV_URL,{cache:"no-store"});
     if(!r.ok) throw new Error("HTTP "+r.status);
     const rows=parseCSV(await r.text());
     const norm=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
@@ -1522,7 +1531,8 @@ async function cargaSheet(){
     const ix2=(a,b)=>{ const i=ix(a); return i>=0?i:ix(b); };
     const iN=ix2("jugador","player"), iP=ix2("poder","power"), iK=ix2("kills","kills"),
           iD=ix2("donacion","donation"), iV=ix2("vs","vs"), iNu=ix2("nuevo","new"), iH=ix2("hq","hq"),
-          iA=ix2("arenapower","arena"), iAT=ix2("alltimevs","alltime");
+          iA=ix2("arenapower","arena"), iAT=ix2("alltimevs","alltime"),
+          iF=ix2("fechadatos","datadate");
     if(iN<0||iP<0||iK<0||iV<0) throw new Error("missing headers (Player, Power, Kills, VS)");
     const num=s=>{ const d=String(s??"").replace(/[^\d]/g,""); return d?parseInt(d,10):null; };
     const nuevos={};
@@ -1534,6 +1544,16 @@ async function cargaSheet(){
               hq:iH>=0?num(r[iH]):null, atvs:iAT>=0?num(r[iAT]):null};
     });
     if(datos.length<2) throw new Error("the sheet has no player rows");
+    /* Fecha de captura: primera celda no vacía de la columna FechaDatos */
+    if(iF>=0){
+      let fx="";
+      for(const r0 of rows.slice(1)){ if(r0[iF]&&r0[iF].trim()){ fx=r0[iF].trim(); break; } }
+      if(fijaFechaDatos(fx)){
+        const t=chScatter&&chScatter.options.scales.y.title;
+        if(t) t.text=(ES_FINAL?"% of weekly VS minimum":"% of pace (day "+DIA_VS+"/6)")+" · capped at 300%";
+        pintaSello();
+      }
+    }
     aplicaDatos(datos, nuevos);
     guardaCache();
     if(el) el.innerHTML='Source: <b style="color:var(--verde)">Live Google Sheet</b> · '+DATA.length+' players · updated '+fFecha(Date.now())+' · auto-refreshes every 5 min';
