@@ -90,6 +90,20 @@ select:focus,input:focus{outline:2px solid var(--rosa); outline-offset:1px;}
 .perfil-grid{display:grid; grid-template-columns:280px 1fr; gap:16px;}
 @media(max-width:860px){.perfil-grid{grid-template-columns:1fr;}}
 .ficha .nom{font-size:20px; color:var(--rosa); letter-spacing:.1em; margin:10px 0 2px;}
+.stats{display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin:12px 0 4px;}
+@media(max-width:420px){.stats{grid-template-columns:repeat(2,1fr);}}
+.st{background:linear-gradient(180deg,#202023,#151517); border:1px solid #2E2E32; padding:9px 10px;
+  clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);}
+.st .lab{font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--tinta2);}
+.st .val{font-size:19px; font-weight:700; color:var(--tinta); font-variant-numeric:tabular-nums; line-height:1.25;}
+.st .sub{font-size:10.5px; color:var(--tinta2); font-variant-numeric:tabular-nums;}
+.st.big .val{color:var(--rosa);}
+.st .val.ok{color:var(--verde);} .st .val.mid{color:var(--ambar);} .st .val.bad{color:var(--rojo);}
+.vsbar{height:7px; background:#0E0A0B; margin-top:6px; position:relative; overflow:hidden;}
+.vsbar b{position:absolute; left:0; top:0; bottom:0; background:var(--verde);}
+.vsbar.mid b{background:var(--ambar);} .vsbar.bad b{background:var(--rojo);}
+.masdet{margin-top:10px; font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--tinta2); cursor:pointer; border-bottom:1px dotted #4a4a4e; display:inline-block;}
 .ficha .brk{font-size:11px; color:var(--tinta2); letter-spacing:.14em; text-transform:uppercase;}
 .ficha table{width:100%; border-collapse:collapse; margin-top:12px; font-size:13px;}
 .ficha td{padding:6px 4px; border-bottom:1px dashed var(--linea);}
@@ -352,7 +366,7 @@ window.addEventListener("DOMContentLoaded", function(){
     <div class="fmly disp"><b>HALO LNH FMLY</b> · Survive together · answer together</div>
   </div>
   <div class="stamp">
-    <b class="disp" id="stampFecha">—</b> · <span style="opacity:.6">build 40</span><br>
+    <b class="disp" id="stampFecha">—</b> · <span style="opacity:.6">build 41</span><br>
     <span id="stampDetalle">100 members</span>
   </div>
 </header>
@@ -441,7 +455,9 @@ window.addEventListener("DOMContentLoaded", function(){
       <select id="selJugador" size="1" aria-label="Select player"></select>
       <div class="nom disp" id="fNom">—</div>
       <div class="brk" id="fBrk"></div>
-      <table id="fTabla"></table>
+      <div class="stats" id="fStats"></div>
+      <span class="masdet" id="fMas">+ More detail</span>
+      <table id="fTabla" hidden></table>
       <div class="acciones">
         <button class="btn ok" id="btnFelicita">📋 Personal message</button>
       </div>
@@ -891,6 +907,35 @@ function pintaCmpChips(){
 
 function clasePct(v){ return v==null?"":(v>=100?"pct-ok":(v>=60?"pct-mid":"pct-bad")); }
 
+/* Puesto del jugador en la alianza para una métrica (1 = el mejor) */
+function puesto(p, get){
+  const v=get(p); if(v==null) return null;
+  const xs=DATA.map(get).filter(x=>x!=null);
+  return xs.filter(x=>x>v).length + 1;
+}
+function pintaStats(p){
+  const el=document.getElementById("fStats"); if(!el) return;
+  const tot = n => n==null ? "" : "#"+n+" of "+DATA.length;
+  const vsCls = p.vsPct==null?"":p.vsPct>=100?"ok":p.vsPct>=60?"mid":"bad";
+  const donCls = p.d==null?"":p.d>=20000?"ok":p.d>=12000?"mid":"bad";
+  const cards = [
+    {l:"HQ", v: p.hq==null?"—":p.hq, s: p.hq==null?"level unknown":"headquarters"},
+    {l:"Power", v: fM(p.p), s: tot(puesto(p,x=>x.p)), big:1},
+    {l:"Arena Power", v: p.arena==null?"—":fM(p.arena), s: p.arena==null?"not loaded":tot(puesto(p,x=>x.arena)), big:1},
+    {l:"Weekly VS", v: fM(p.vs), s: p.vsPct==null?"no data":fP(p.vsPct)+" of "+fM(ES_FINAL?p.piso:p.pisoHoy), cls:vsCls,
+     bar: p.vsPct==null?null:Math.min(p.vsPct,100)},
+    {l:"Kills", v: p.k?fN(p.k):"—", s: p.k?tot(puesto(p,x=>x.k)):"not loaded"},
+    {l:"Donations", v: p.d==null?"—":fN(p.d), s: p.d==null?"not loaded":tot(puesto(p,x=>x.d)), cls:donCls},
+  ];
+  el.innerHTML = cards.map(c=>
+    `<div class="st${c.big?" big":""}">
+       <div class="lab">${c.l}</div>
+       <div class="val ${c.cls||""}">${c.v}</div>
+       <div class="sub">${c.s}</div>
+       ${c.bar==null?"":`<div class="vsbar ${c.cls==="ok"?"":c.cls}"><b style="width:${c.bar}%"></b></div>`}
+     </div>`).join("");
+}
+
 function abrePerfil(nombre){
   jugador = DATA.find(p=>p.n===nombre) || jugador;
   document.getElementById("selJugador").value = jugador.n;
@@ -899,10 +944,9 @@ function abrePerfil(nombre){
   document.getElementById("fBrk").textContent =
     `Power rank #${jugador.rp} · weekly VS minimum ${fM(jugador.piso)}` + (ES_FINAL?"":" · pace today "+fM(jugador.pisoHoy)) +
     (NUEVOS[jugador.n] ? " · NEW MEMBER" : "");
+  pintaStats(jugador);
   const filas = [
     ...(NUEVOS[jugador.n] ? [["Status", `<span class="flag novato">Rookie shield · since ${NUEVOS[jugador.n]}</span>`]] : []),
-    ["Power", fM(jugador.p)],
-    ["HQ level", jugador.hq==null ? "—" : jugador.hq],
     ["Growth since Sunday", jugador.crec==null ? "—" :
       `<span class="${jugador.crec>=1?'pct-ok':jugador.crec>=0.3?'pct-mid':'pct-bad'}">${(jugador.crec>=0?"+":"")+jugador.crec.toFixed(1)}% (${fM(jugador.p-jugador.prev)})</span>`],
     ["Value Index", jugador.idx==null ? "—" :
@@ -912,10 +956,7 @@ function abrePerfil(nombre){
       (jugador.cumpleMin
         ? `<span class="pct-ok">✔ ${ES_FINAL?"Meets "+fM(jugador.piso):"On pace — "+fM(jugador.vs)+" vs "+fM(jugador.pisoHoy)+" needed today"}</span>`
         : `<span class="pct-bad">✘ ${ES_FINAL?"Below "+fM(jugador.piso):"Behind — needs "+fM(jugador.pisoHoy)+" today (weekly "+fM(jugador.piso)+")"}</span>`)],
-    ["Weekly VS", `<span class="${clasePct(jugador.vsPct)}">${fM(jugador.vs)} · ${fP(jugador.vsPct)} of min</span>`],
     ["All-Time VS (alliance)", jugador.atvs==null ? "—" : fM(jugador.atvs)],
-    ["Weekly donation", fN(jugador.d)],
-    ["Cumulative kills", fN(jugador.k)],
     ["Kills per M power", jugador.kpm==null?"—":fN(Math.round(jugador.kpm))],
     ["VS percentile in alliance", fP(pctil(DATA.map(p=>p.vsPct), jugador.vsPct))],
     ["Donation percentile in alliance", fP(pctil(DATA.map(p=>p.d), jugador.d))],
@@ -1349,6 +1390,11 @@ function msgLote(arr, grupo){
   return `📊 [HALO] WEEKLY CHECK-IN\n\nHey ${lista} — a friendly reminder that we're a bit behind on the weekly VS minimum (5M, or 7M if you're 95M+ power). That's about 830K–1.2M per day.\n\nEasy points: do your daily radar missions and spend speedups on the matching VS day. If something's going on — busy week, in-game trouble — just tell us, we help first. 🌸`;
 }
 document.getElementById("btnFelicita")?.addEventListener("click",e=>copia(msgPersonal(jugador), e.target));
+document.getElementById("fMas")?.addEventListener("click",e=>{
+  const t=document.getElementById("fTabla");
+  t.hidden=!t.hidden;
+  e.target.textContent = t.hidden ? "+ More detail" : "− Less detail";
+});
 
 /* ---------- Nav inferior ---------- */
 document.querySelectorAll("#nav a[data-nav]").forEach(a=>a.addEventListener("click",()=>{
