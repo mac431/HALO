@@ -366,7 +366,7 @@ window.addEventListener("DOMContentLoaded", function(){
     <div class="fmly disp"><b>HALO LNH FMLY</b> · Survive together · answer together</div>
   </div>
   <div class="stamp">
-    <b class="disp" id="stampFecha">—</b> · <span style="opacity:.6">build 41</span><br>
+    <b class="disp" id="stampFecha">—</b> · <span style="opacity:.6">build 42</span><br>
     <span id="stampDetalle">100 members</span>
   </div>
 </header>
@@ -490,7 +490,9 @@ window.addEventListener("DOMContentLoaded", function(){
       <button class="chip" data-met="atvs">All-Time VS</button>
       <button class="chip" data-met="vsPct">% of Minimum</button>
       <button class="chip" data-met="d">Donations</button>
-      <button class="chip" data-met="kpm">Kills / M Power</button>
+      <button class="chip" data-met="k">Kills</button>
+      <button class="chip" data-met="p">Power</button>
+      <button class="chip" data-met="arena">Arena Power</button>
     </div>
     <div class="grid2">
       <div><div class="chartbox h330"><canvas id="barTop"></canvas></div></div>
@@ -669,7 +671,7 @@ DATA.forEach(p=>{
   p.obj = p.pisoHoy;
   p.vsPct = p.vs==null ? null : p.vs/p.pisoHoy*100;
   p.cumpleMin = p.vs==null ? null : p.vs >= p.pisoHoy;
-  p.kpm = p.k/(p.p/1e6);
+  p.kpm = p.p ? p.k/(p.p/1e6) : null;
   p.efi = p.vs==null ? null : p.vs/(p.p/1e6); /* VS por millón de poder */
 });
 
@@ -958,6 +960,7 @@ function abrePerfil(nombre){
         : `<span class="pct-bad">✘ ${ES_FINAL?"Below "+fM(jugador.piso):"Behind — needs "+fM(jugador.pisoHoy)+" today (weekly "+fM(jugador.piso)+")"}</span>`)],
     ["All-Time VS (alliance)", jugador.atvs==null ? "—" : fM(jugador.atvs)],
     ["Kills per M power", jugador.kpm==null?"—":fN(Math.round(jugador.kpm))],
+    ["Kills rank", jugador.k?("#"+puesto(jugador,x=>x.k)+" of "+DATA.length):"—"],
     ["VS percentile in alliance", fP(pctil(DATA.map(p=>p.vsPct), jugador.vsPct))],
     ["Donation percentile in alliance", fP(pctil(DATA.map(p=>p.d), jugador.d))],
   ];
@@ -967,7 +970,8 @@ function abrePerfil(nombre){
 }
 
 /* Rankings */
-const nombresMet = {idx:"Value Index (0–100)", vsPct:"% of VS Minimum", d:"Donations", kpm:"Kills / M Power", vs:"VS Points"};
+const nombresMet = {idx:"Value Index (0–100)", vsPct:"% of VS Minimum", d:"Donations",
+  k:"Kills", p:"Power", arena:"Arena Power", vs:"VS Points", atvs:"All-Time VS"};
 function hazBar(id, titulo){ return new Chart(document.getElementById(id), {
   type:"bar",
   data:{labels:[],datasets:[{data:[],backgroundColor:"#F2A3B3",borderWidth:0,barThickness:12}]},
@@ -1015,7 +1019,7 @@ function pintaAlertas(){
   const body = filas.map(({p,flags})=>
     `<tr><td class="nom" data-n="${p.n}">${p.n}${NUEVOS[p.n]?' <span class="flag novato">N</span>':''}</td><td>${fM(p.p)}</td>
      <td class="${clasePct(p.vsPct)}">${fP(p.vsPct)}</td><td>${fN(p.d)}</td>
-     <td>${fN(Math.round(p.kpm))}</td>
+     <td>${p.kpm==null?"—":fN(Math.round(p.kpm))}</td>
      <td>${flags.map(f=>`<span class="flag ${f.c}">${f.t}</span>`).join("")}</td></tr>`).join("");
   document.getElementById("tAlertas").innerHTML = head+body;
 }
@@ -1047,7 +1051,7 @@ function pintaTabla(){
      ${cel(0,cVs(p), fM(p.vs))}
      ${cel(0,cVs(p), fP(p.vsPct))}
      ${cel(0,cDon(p), fN(p.d))}
-     ${cel(0,cKpm(p), fN(Math.round(p.kpm)))}</tr>`).join("");
+     ${cel(0,cKpm(p), p.kpm==null?"—":fN(Math.round(p.kpm)))}</tr>`).join("");
   document.getElementById("tTodos").innerHTML = head+body;
 }
 
@@ -1225,7 +1229,7 @@ let chCombate = new Chart(document.getElementById("combatePlot"), {
     }}
 });
 function pintaCombate(){
-  const A = activos().filter(p=>p.kpm>0);
+  const A = activos().filter(p=>p.kpm!=null && p.kpm>0 && p.p>0);
   chCombate.$jug = A;
   const xs = A.map(p=>p.kpm).sort((a,b)=>a-b);
   chCombate.$med = xs.length? xs[Math.floor(xs.length/2)] : 0;
