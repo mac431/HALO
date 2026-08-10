@@ -366,7 +366,7 @@ window.addEventListener("DOMContentLoaded", function(){
     <div class="fmly disp"><b>HALO LNH FMLY</b> · Survive together · answer together</div>
   </div>
   <div class="stamp">
-    <b class="disp" id="stampFecha">—</b> · <span style="opacity:.6">build 42</span><br>
+    <b class="disp" id="stampFecha">—</b> · <span style="opacity:.6">build 43</span><br>
     <span id="stampDetalle">100 members</span>
   </div>
 </header>
@@ -1250,12 +1250,13 @@ function pintaPrioridades(){
   const conIdx = A.filter(p=>p.idx!=null);
   /* Campeones por nivel de HQ: el mejor índice de cada tier (top 3 al expandir) */
   const porHQ = {};
-  conIdx.forEach(p=>{ if(p.hq!=null) (porHQ[p.hq]=porHQ[p.hq]||[]).push(p); });
+  A.forEach(p=>{ if(p.hq!=null) (porHQ[p.hq]=porHQ[p.hq]||[]).push(p); });
   const niveles = Object.keys(porHQ).map(Number).sort((a,b)=>b-a);
-  const campeones = niveles.map(h=>({
-    hq:h, n:porHQ[h].length,
-    top: porHQ[h].sort((a,b)=>b.idx-a.idx).slice(0,5)
-  }));
+  const campeones = niveles.map(h=>{
+    const g = porHQ[h];
+    const puntuan = g.filter(p=>p.idx!=null).sort((a,b)=>b.idx-a.idx);
+    return { hq:h, n:g.length, sin:g.length-puntuan.length, top:puntuan.slice(0,5) };
+  });
   const elite = campeones.map(c=>c.top[0]).filter(Boolean);
   const warn  = A.filter(p=>!NUEVOS[p.n] && p.cumpleMin===false).sort((a,b)=>(a.vs??0)-(b.vs??0));
   const dorm  = A.filter(p=>!NUEVOS[p.n] && p.p>=80e6 && p.kpm<1500 && p.cumpleMin===false).sort((a,b)=>a.kpm-b.kpm);
@@ -1294,10 +1295,14 @@ function pintaPrioridades(){
     ).join(" · ");
     let html = `<div style="margin:2px 0 7px;padding-bottom:6px;border-bottom:1px solid rgba(74,42,49,.6)">
       <span style="color:var(--verde);font-weight:700;letter-spacing:.08em">BEST OVERALL</span>
-      <span style="opacity:.55">(${conIdx.length})</span><br>${linea(global)}</div>`;
-    html += campeones.map(c=>
-      `<div style="margin:3px 0"><span style="color:var(--rosa);font-weight:700">HQ ${c.hq}</span>
-       <span style="opacity:.55">(${c.n})</span> · ${linea(c.top.slice(0,N))}</div>`).join("");
+      <span style="opacity:.55">(${conIdx.length} of ${A.length} scored)</span><br>${linea(global)}</div>`;
+    html += campeones.map(c=>{
+      const sinPunt = c.sin ? `<span style="opacity:.45"> · ${c.sin} not scored</span>` : "";
+      const cuerpo = c.top.length ? linea(c.top.slice(0,N))
+        : '<span style="opacity:.5">no scored members yet</span>';
+      return `<div style="margin:3px 0"><span style="color:var(--rosa);font-weight:700">HQ ${c.hq}</span>
+       <span style="opacity:.55">(${c.n})</span> · ${cuerpo}${sinPunt}</div>`;
+    }).join("");
     html += `<a class="ver" data-toggle="pEliteL">${exp?"− top 3 each":"+ top 5 each"}</a>`;
     lEl.innerHTML = html;
   })();
