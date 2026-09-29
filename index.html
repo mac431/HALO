@@ -81,6 +81,26 @@ svg text{font-family:'Roboto Condensed',sans-serif}
 .hqrow{display:grid;grid-template-columns:52px 1fr 70px;gap:8px;align-items:center;font-size:12px;margin:5px 0}
 .hqbar{display:flex;height:18px;border-radius:4px;overflow:hidden;background:#1c1c1f}
 .hqbar span{display:grid;place-items:center;font-size:10px;font-weight:700;color:#0009;cursor:pointer}
+
+.spot{position:sticky;top:0;z-index:20;padding:8px 0;background:linear-gradient(180deg,var(--bg) 70%,transparent)}
+.spot input{padding-left:34px;border-color:#A3273499;background:#1c1c1f url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23F2A3B3' stroke-width='2'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='M11 11l4 4'/%3E%3C/svg%3E") no-repeat 11px center}
+.sugg{position:absolute;left:0;right:0;top:100%;background:#1c1c1f;border:1px solid var(--edge);border-radius:8px;max-height:300px;overflow:auto;display:none;box-shadow:0 8px 20px #000c}
+.sugg.on{display:block}
+.sugg div{padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;gap:8px;font-size:14px;border-top:1px solid #ffffff08}
+.sugg div.act,.sugg div:hover{background:#A3273444}
+.sugg small{color:var(--mut)}
+.prof-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.prof-hd h2{font-size:24px !important}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.tile{background:#1c1c1f;border:1px solid var(--edge);border-radius:8px;padding:8px}
+.tile b{display:block;font-family:Oswald;font-size:20px}.tile span{font-size:11px;color:var(--mut)}
+.tile em{display:block;font-style:normal;font-size:11px;color:var(--pink)}
+.pct{display:grid;grid-template-columns:78px 1fr 44px;gap:8px;align-items:center;font-size:12px;margin:6px 0}
+.pct .t{height:10px;background:#1c1c1f;border-radius:5px;position:relative;overflow:hidden}
+.pct .t i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:linear-gradient(90deg,var(--red),var(--pink))}
+.pct .t u{position:absolute;top:-2px;bottom:-2px;left:50%;border-left:1px dashed #ffffff66}
+.cmp td{padding:5px 4px}
+.hb.hl{background:#A3273433;border-radius:4px}
 .toast{position:fixed;bottom:64px;left:50%;transform:translateX(-50%);background:#2f6b45;color:#fff;padding:8px 14px;border-radius:6px;font-size:13px;opacity:0;transition:.3s;pointer-events:none}
 .toast.on{opacity:1}
 </style>
@@ -112,6 +132,10 @@ svg text{font-family:'Roboto Condensed',sans-serif}
 <div class="divider"></div>
 <div class="stamp" id="stamp"></div>
 <div class="src" id="src">Loading…</div>
+<div class="spot"><div style="position:relative">
+  <input type="search" id="spotQ" placeholder="Spotlight — find a player…" autocomplete="off">
+  <div class="sugg" id="spotS"></div>
+</div></div>
 
 <!-- SUMMARY -->
 <section class="view on" id="v-summary">
@@ -167,6 +191,11 @@ svg text{font-family:'Roboto Condensed',sans-serif}
     <p class="how">Each player vs. the median of their own rank. Suggestions only — command decides.</p>
     <div id="rankBox"></div>
   </div>
+</section>
+
+<!-- PLAYER -->
+<section class="view" id="v-player">
+  <div id="profile"><div class="card"><div class="empty">Search a player in Spotlight above to see the full profile.</div></div></div>
 </section>
 
 <!-- CHARTS -->
@@ -237,6 +266,7 @@ svg text{font-family:'Roboto Condensed',sans-serif}
   <button class="on" data-v="summary">SUMMARY</button>
   <button data-v="week">THIS WEEK</button>
   <button data-v="charts">CHARTS</button>
+  <button data-v="player">PLAYER</button>
   <button data-v="delta">WEEK vs WEEK</button>
   <button data-v="activity">ACTIVITY</button>
   <button data-v="ranks">RANKS</button>
@@ -499,7 +529,7 @@ function renderAll(){
   const dstr = DATA_DATE ? DATA_DATE.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric',year:'numeric'}) : 'date unknown';
   $('#stamp').textContent = `Data captured ${dstr} · ` + (FINAL ? 'Week closed — full minimum' : `Mid-week · day ${DAY}/${VS_DAYS} · pace ${fmtM(target())}`);
   document.querySelectorAll('.dmin').forEach(e=>e.textContent=fmtM(DAILY_MIN));
-  renderSummary(); renderWeek(); renderDelta(); renderDaily(); renderActivity(); renderRanks(); renderCharts(); fillCfg();
+  renderSummary(); renderWeek(); renderDelta(); renderDaily(); renderActivity(); renderRanks(); renderCharts(); renderProfile(); fillCfg();
 }
 
 function below(){ return active().filter(p=>(p.vs||0)<target()).sort((a,b)=>(a.vs||0)-(b.vs||0)); }
@@ -658,7 +688,7 @@ function renderRankBars(){
     const w = Math.max(val(p)/max*100, 0.5);
     const col = isVS ? paceColor(p) : 'var(--red)';
     const inside = w > 70;
-    return `<div class="hb" title="${esc(p.name)} · ${p.rank||''} · HQ ${p.hq??'—'}" onclick="toast('${esc(p.name).replace(/'/g,"\\'")}: ${fmtM(val(p))}')">
+    return `<div class="hb${p.name===SEL?' hl':''}" title="${esc(p.name)} · ${p.rank||''} · HQ ${p.hq??'—'}" onclick="openPlayer(${CUR.indexOf(p)})">
       <span class="rk">${i+1}</span><span class="nm">${esc(p.name)}</span>
       <span class="tr"><span class="fl" style="width:${w}%;background:${col}"></span>${pl}
       <span class="vl" style="${inside?`right:${100-w}%;margin-right:4px;color:#fff`:`left:${w}%;margin-left:4px;color:var(--txt)`}">${fmtM(val(p))}</span></span></div>`;
@@ -687,7 +717,8 @@ function renderQuad(){
   pts.forEach((p,i)=>{
     const c=paceColor(p);
     s+=`<circle cx="${X(p.arena)}" cy="${Y(p.kills)}" r="5" fill="${c}" fill-opacity=".85" stroke="#141416" style="cursor:pointer" onclick="quadTip(${i})"><title>${esc(p.name)}</title></circle>`;
-    if(top.has(p.name)) s+=`<text x="${X(p.arena)+8}" y="${Y(p.kills)+4}" fill="#ecebe8" font-size="10">${esc(p.name)}</text>`;
+    if(p.name===SEL) s+=`<circle cx="${X(p.arena)}" cy="${Y(p.kills)}" r="10" fill="none" stroke="#fff" stroke-width="2.5"/><text x="${X(p.arena)+13}" y="${Y(p.kills)+4}" fill="#fff" font-size="12" font-weight="700">${esc(p.name)}</text>`;
+    else if(top.has(p.name)) s+=`<text x="${X(p.arena)+8}" y="${Y(p.kills)+4}" fill="#ecebe8" font-size="10">${esc(p.name)}</text>`;
   });
   s+='</svg>';
   $('#quad').innerHTML=s; window._qp=pts;
@@ -708,6 +739,110 @@ function renderHQ(){
   }).join('');
 }
 function hqTip(h,k){ const l=window._hq[h][k].sort((a,b)=>(a.vs||0)-(b.vs||0)); $('#hqTip').innerHTML=`HQ ${h} · ${ {ok:'meeting',cl:'close',lo:'below'}[k] }: `+l.map(p=>`${esc(p.name)} ${fmtM(p.vs)}`).join(' · '); }
+
+
+/* ============================ SPOTLIGHT + PROFILE ============================ */
+let SEL = null;
+const CYR = {'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'e','ж':'zh','з':'z','и':'i','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'h','ц':'c','ч':'ch','ш':'sh','щ':'sh','ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya','η':'n','α':'a','τ':'t','σ':'s','υ':'u','ø':'o'};
+const fold = s => String(s||'').toLowerCase().split('').map(c=>CYR[c]??c).join('').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9぀-ヿ一-鿿]/g,'');
+function score(q, name){
+  const a=fold(name), b=fold(q); if(!b) return 0;
+  if(a.startsWith(b)) return 100-a.length*.1;
+  if(a.includes(b)) return 70-a.indexOf(b);
+  let i=0; for(const c of a){ if(c===b[i]) i++; if(i===b.length) return 40; }
+  if(name.toLowerCase().includes(q.toLowerCase())) return 60;
+  return 0;
+}
+let suggIdx=0, suggList=[];
+function spotInput(){
+  const q=$('#spotQ').value.trim();
+  suggList = q ? CUR.map((p,i)=>({i,s:Math.max(score(q,p.name),score(q,p.raw))})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,8) : [];
+  suggIdx=0; drawSugg();
+}
+function drawSugg(){
+  const el=$('#spotS');
+  if(!suggList.length){ el.classList.remove('on'); el.innerHTML=''; return; }
+  el.innerHTML = suggList.map((x,k)=>{ const p=CUR[x.i]; return `<div class="${k===suggIdx?'act':''}" onmousedown="openPlayer(${x.i})"><span>${esc(p.name)}</span><small>${p.rank||''} · HQ ${p.hq??'—'} · VS ${fmtM(p.vs)}</small></div>`; }).join('');
+  el.classList.add('on');
+}
+$('#spotQ').addEventListener('input',spotInput);
+$('#spotQ').addEventListener('keydown',e=>{
+  if(!suggList.length) return;
+  if(e.key==='ArrowDown'){ suggIdx=(suggIdx+1)%suggList.length; drawSugg(); e.preventDefault(); }
+  else if(e.key==='ArrowUp'){ suggIdx=(suggIdx-1+suggList.length)%suggList.length; drawSugg(); e.preventDefault(); }
+  else if(e.key==='Enter'){ openPlayer(suggList[suggIdx].i); e.preventDefault(); }
+  else if(e.key==='Escape'){ suggList=[]; drawSugg(); }
+});
+$('#spotQ').addEventListener('blur',()=>setTimeout(()=>{ suggList=[]; drawSugg(); },150));
+
+function openPlayer(i){
+  const p=CUR[i]; if(!p) return;
+  SEL=p.name; store('amps_sel',SEL);
+  $('#spotQ').value=''; suggList=[]; drawSugg(); $('#spotQ').blur();
+  renderProfile(); renderRankBars(); renderQuad();
+  document.querySelector('#nav button[data-v="player"]').click();
+}
+
+function rankOf(p,key,list){ const l=(list||CUR).filter(x=>x[key]!=null).sort((a,b)=>b[key]-a[key]); const i=l.indexOf(p); return i<0?null:{pos:i+1,of:l.length,pctl:Math.round((l.length-1-i)/(Math.max(l.length-1,1))*100)}; }
+
+function renderProfile(){
+  const p = CUR.find(x=>x.name===SEL);
+  if(!p){ return; }
+  const pp=pacePct(p), need=Math.max(0,target()-(p.vs||0));
+  const metr=[['vs','VS'],['don','Donation'],['arena','Arena'],['power','Power'],['kills','Kills']];
+  const rk={}; metr.forEach(([k])=>rk[k]=rankOf(p,k));
+  const sameRank=CUR.filter(x=>x.rank===p.rank&&!x.isNew), sameHQ=CUR.filter(x=>x.hq===p.hq&&!x.isNew);
+  const kpm = p.arena ? p.kills/(p.arena/1e6) : null;
+  const kpmMed = median(CUR.filter(x=>x.arena).map(x=>x.kills/(x.arena/1e6)));
+  // zone
+  const mA=median(CUR.map(x=>x.arena)), mK=median(CUR.map(x=>x.kills));
+  const zone = p.arena==null||p.kills==null ? '—' : p.arena>=mA ? (p.kills>=mK?'WAR CORE':'BIG FARM') : (p.kills>=mK?'FIGHTER':'GROWING');
+  // flags
+  const flags=[];
+  if(p.isNew) flags.push(['NEW · rookie shield','n']);
+  if(pp!=null) flags.push(pp>=100?[FINAL?'MET MINIMUM':'ON PACE','g']:pp>=60?['CLOSE','y']:['BELOW','x']);
+  if(p.seen!=null) flags.push(p.seen>=INACTIVE_H?['INACTIVE '+fmtSeen(p.seen),'x']:p.seen>=AWAY_H?['AWAY '+fmtSeen(p.seen),'x']:['Seen '+fmtSeen(p.seen)+(p.seen?' ago':''),'m']);
+  flags.push([zone,zone==='WAR CORE'?'g':zone==='BIG FARM'?'y':'m']);
+  // delta
+  let deltaHTML='';
+  if(PREV){ const d=deltas().find(x=>x.p.name===p.name); if(d&&d.status!=='NEW') deltaHTML=`<div class="sec">WEEK vs WEEK</div><table class="cmp"><tr><td>+Kills</td><td class="r ${d.dk>0?'up':''}">${sgn(d.dk)}</td><td>+Arena</td><td class="r ${d.da>0?'up':d.da<0?'dn':''}">${sgn(d.da)}</td></tr><tr><td>+Power</td><td class="r ${d.dp>0?'up':d.dp<0?'dn':''}">${sgn(d.dp)}</td><td>Last wk VS</td><td class="r">${fmtM(d.prevVS)}</td></tr></table><div style="margin-top:4px"><span class="pill ${STATUS_CLS[d.status]}">${d.status}</span></div>`; }
+  const hasDaily=p.days.some(v=>v!=null);
+  const lbl=['Mon','Tue','Wed','Thu','Fri','Sat'];
+  const dailyHTML = hasDaily ? `<div class="sec">DAILY VS</div><table class="cmp"><tr>${lbl.map(l=>`<td style="text-align:center;color:var(--mut)">${l}</td>`).join('')}</tr><tr>${p.days.map((v,i)=>`<td style="text-align:center" class="${v==null?'':v>=DAILY_MIN?'up':'dn'}">${i<DAY?fmtM(v):'·'}</td>`).join('')}</tr></table>` : '';
+  const at=allTime(p);
+  $('#profile').innerHTML = `<div class="card">
+    <div class="prof-hd"><div><h2>${esc(p.name)}</h2><div style="color:var(--mut);font-size:13px;margin-top:4px">${p.rank||'—'} · HQ ${p.hq??'—'}${p.raw!==p.name?' · in-game: '+esc(p.raw):''}</div></div>
+      <button class="btn ghost" onclick="copyPersonal()">Personal message</button></div>
+    <div class="chips" style="margin-top:10px">${flags.map(([t,c])=>`<span class="pill ${c}">${t}</span>`).join('')}</div>
+    <div class="tiles">
+      ${metr.map(([k,l])=>`<div class="tile"><span>${l}</span><b>${fmtM(p[k])}</b><em>${rk[k]?'#'+rk[k].pos+' of '+rk[k].of:'—'}</em></div>`).join('')}
+      <div class="tile"><span>${at!=null?'All-Time VS':'Kills / M arena'}</span><b>${at!=null?fmtM(at):kpm!=null?fmtM(kpm):'—'}</b><em>${at!=null?'':kpmMed?'median '+fmtM(kpmMed):''}</em></div>
+    </div>
+    <div class="sec">VS ${FINAL?'VS WEEKLY MINIMUM':'PACE · DAY '+DAY+'/'+VS_DAYS}</div>
+    <div class="bar" style="height:14px"><i style="width:${Math.min(100,pp||0)}%;background:${paceColor(p)}"></i></div>
+    <div style="font-size:12px;color:var(--mut)">${pp==null?'No VS data':Math.round(pp)+'% of '+fmtM(target())+(need?` · needs ${fmtM(need)} more${FINAL?'':` ≈ ${fmtM(need/Math.max(1,VS_DAYS-DAY+1))}/day`}`:' · ✅ done')}</div>
+    <div class="sec">VS THE ALLIANCE (percentile · dashed = median)</div>
+    ${metr.map(([k,l])=>rk[k]?`<div class="pct"><span>${l}</span><span class="t"><i style="width:${rk[k].pctl}%"></i><u></u></span><span class="r">${rk[k].pctl}%</span></div>`:'').join('')}
+    <div class="sec">COMPARED WITH</div>
+    <table class="cmp"><tr><th></th><th class="r">Player</th><th class="r">${p.rank||'Rank'} median</th><th class="r">HQ ${p.hq??''} median</th></tr>
+    ${metr.map(([k,l])=>{ const a=median(sameRank.map(x=>x[k])), b=median(sameHQ.map(x=>x[k])); const c=v=>v==null||p[k]==null?'':p[k]>=v?'up':'dn'; return `<tr><td>${l}</td><td class="r"><b>${fmtM(p[k])}</b></td><td class="r ${c(a)}">${fmtM(a)}</td><td class="r ${c(b)}">${fmtM(b)}</td></tr>`; }).join('')}
+    </table>
+    ${deltaHTML}${dailyHTML}
+  </div>`;
+}
+
+function copyPersonal(){
+  const p=CUR.find(x=>x.name===SEL); if(!p) return;
+  const pp=pacePct(p)||0, need=Math.max(0,target()-(p.vs||0)), r=rankOf(p,'vs');
+  let m;
+  if(p.isNew) m=`Welcome to [HALO], ${p.name}! 🎉 This week you're on rookie shield. From next week the VS minimum is ${fmtM(DAILY_MIN)}/day. Ask us anything!`;
+  else if(pp>=150) m=`${p.name}, amazing VS! 🔥 ${fmtM(p.vs)} — #${r.pos} in the alliance. Thank you for carrying HALO!`;
+  else if(pp>=100) m=`${p.name}, great job — ${fmtM(p.vs)} VS, you're ${FINAL?'above the minimum':'on pace'} ✅. Keep it up!`;
+  else if(FINAL) m=`${p.name}, this week you closed at ${fmtM(p.vs)} VS (minimum ${fmtM(target())}). Let's aim for ${fmtM(DAILY_MIN)}/day next week 💪`;
+  else m=`${p.name}, quick check-in 📣 You have ${fmtM(p.vs)} VS on day ${DAY}/${VS_DAYS}. You need ${fmtM(need)} more ≈ ${fmtM(need/Math.max(1,VS_DAYS-DAY+1))}/day. You've got this 💪`;
+  copy(m);
+}
+SEL = load('amps_sel');
 
 /* ============================ MESSAGES ============================ */
 function copy(t){ (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Copied ✔')).catch(()=>{ prompt('Copy:',t); }); }
