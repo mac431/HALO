@@ -3,19 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AMPS · HALO</title>
+<title>HALO AMPS</title>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#141416;--panel:#232327;--panel2:#2c2c31;--edge:#3a3a40;--red:#A32734;--red2:#c93a48;--pink:#F2A3B3;--gold:#d9a93a;--green:#3fae6a;--amber:#e0a02f;--txt:#ecebe8;--mut:#9a9aa2}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--txt);font-family:'Roboto Condensed',sans-serif}
+body{margin:0;color:var(--txt);font-family:'Roboto Condensed',sans-serif;background:radial-gradient(ellipse 900px 380px at 50% -80px,#5a141d 0%,#2a0f13 45%,var(--bg) 75%) no-repeat,var(--bg)}
 .wrap{max-width:760px;margin:0 auto;padding:16px 16px 90px}
-header h1{font-family:Oswald;font-size:26px;letter-spacing:2px;margin:4px 0 0}
-header .stamp{color:var(--mut);font-size:13px}
+header{display:flex;gap:14px;align-items:center;margin:4px 0 6px}
+header .banner{flex:none;width:74px;filter:drop-shadow(0 4px 6px #000a)}
+header .tag{font-family:Oswald;font-size:12px;letter-spacing:3px;color:var(--pink)}
+header h1{font-family:Oswald;font-size:28px;letter-spacing:2px;margin:0;line-height:1.05}
+header .motto{font-size:12px;font-style:italic;color:#cfc6c8;margin-top:2px}
+.stamp{color:var(--mut);font-size:13px;margin-top:6px}
+.divider{height:3px;margin:10px 0 4px;background:linear-gradient(90deg,var(--red),var(--pink) 50%,transparent)}
 .src{font-size:12px;margin:8px 0 14px;padding:6px 10px;border-radius:6px;background:#1c1c1f;border:1px solid var(--edge)}
 .src.ok{border-color:#2f6b45;color:#7fdca2}.src.warn{border-color:#6b5520;color:var(--amber)}.src.err{border-color:var(--red);color:#ff8a95}
 .card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--edge);border-radius:10px;padding:14px;margin-bottom:14px;box-shadow:inset 0 1px 0 #ffffff12,0 2px 0 #000}
-.card h2{font-family:Oswald;font-size:17px;letter-spacing:1px;margin:0 0 2px;text-transform:uppercase}
+.card h2{font-family:Oswald;font-size:17px;letter-spacing:1px;margin:0 0 2px;text-transform:uppercase;border-left:4px solid var(--red);padding-left:8px}
+.card{border-top:2px solid #A3273488}
+.blist{margin-top:8px}
+.bl{display:grid;grid-template-columns:18px 1fr auto;gap:4px 8px;align-items:center;padding:7px 0;border-top:1px solid #ffffff10;font-size:13px}
+.bl:first-child{border-top:0}
+.bl .n{color:var(--mut);text-align:right}
+.bl .who{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bl .v{text-align:right;font-weight:700}
+.bl .meter{grid-column:2/4;height:6px;background:#1c1c1f;border-radius:3px;overflow:hidden}
+.bl .meter i{display:block;height:100%}
+.bl .need{grid-column:2/4;font-size:11px;color:var(--mut)}
 .how{color:var(--mut);font-size:12px;margin:0 0 10px}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
 .kpi{background:#1c1c1f;border:1px solid var(--edge);border-radius:8px;padding:10px}
@@ -46,6 +61,26 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#0e0e10;border-top:2px sol
 nav button{font-family:Oswald;font-size:12px;padding:8px 9px;border-radius:6px;color:var(--mut);background:none;border:0;cursor:pointer;white-space:nowrap}
 nav button.on{background:var(--red);color:#fff}
 .view{display:none}.view.on{display:block}
+
+.mchips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.mchip{background:#1c1c1f;border:1px solid var(--edge);color:var(--txt);border-radius:14px;padding:5px 11px;font-size:12px;cursor:pointer;font-family:inherit}
+.mchip.on{background:var(--red);border-color:var(--red);color:#fff}
+.hbars{position:relative}
+.hb{display:grid;grid-template-columns:22px minmax(90px,150px) 1fr;gap:6px;align-items:center;font-size:12px;height:22px;cursor:pointer}
+.hb .rk{color:var(--mut);text-align:right}
+.hb .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb .tr{position:relative;height:14px;background:#1c1c1f;border-radius:3px}
+.hb .fl{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
+.hb .vl{position:absolute;top:-1px;font-size:11px;font-weight:700;white-space:nowrap}
+.hb .pl{position:absolute;top:-3px;bottom:-3px;width:0;border-left:2px dashed #ffffffaa}
+.hb.hl .nm{color:var(--pink);font-weight:700}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--mut);margin:6px 0 10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+svg text{font-family:'Roboto Condensed',sans-serif}
+.tip{font-size:13px;min-height:20px;margin-top:6px;color:var(--pink)}
+.hqrow{display:grid;grid-template-columns:52px 1fr 70px;gap:8px;align-items:center;font-size:12px;margin:5px 0}
+.hqbar{display:flex;height:18px;border-radius:4px;overflow:hidden;background:#1c1c1f}
+.hqbar span{display:grid;place-items:center;font-size:10px;font-weight:700;color:#0009;cursor:pointer}
 .toast{position:fixed;bottom:64px;left:50%;transform:translateX(-50%);background:#2f6b45;color:#fff;padding:8px 14px;border-radius:6px;font-size:13px;opacity:0;transition:.3s;pointer-events:none}
 .toast.on{opacity:1}
 </style>
@@ -53,9 +88,29 @@ nav button.on{background:var(--red);color:#fff}
 <body>
 <div class="wrap">
 <header>
-  <h1>AMPS · [HALO]</h1>
-  <div class="stamp" id="stamp"></div>
+  <svg class="banner" viewBox="0 0 100 150" aria-label="HALO banner">
+    <defs>
+      <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c2303f"/><stop offset="1" stop-color="#7d1a25"/></linearGradient>
+    </defs>
+    <rect x="4" y="2" width="92" height="6" rx="3" fill="#3a3a40"/>
+    <path d="M10 8 H90 V128 L50 146 L10 128 Z" fill="url(#bg)" stroke="#2a0f13" stroke-width="2"/>
+    <path d="M16 14 H84 V124 L50 140 L16 124 Z" fill="none" stroke="#F2A3B3" stroke-opacity=".35" stroke-width="1.5"/>
+    <circle cx="50" cy="52" r="24" fill="#2a0f13" fill-opacity=".45" stroke="#F2A3B3" stroke-width="3"/>
+    <g stroke="#F2A3B3" stroke-width="2.6" stroke-linecap="round" fill="none">
+      <path d="M50 70 V44"/><path d="M50 52 L38 42"/><path d="M50 52 L62 42"/><path d="M50 46 L42 36"/><path d="M50 46 L58 36"/><path d="M50 44 V32"/>
+      <path d="M50 70 L42 76"/><path d="M50 70 L58 76"/>
+    </g>
+    <text x="50" y="100" text-anchor="middle" font-family="Oswald,sans-serif" font-weight="700" font-size="17" fill="#fff">&lt;HALO&gt;</text>
+    <text x="50" y="116" text-anchor="middle" font-family="Oswald,sans-serif" font-size="9" letter-spacing="1" fill="#F2A3B3">LNH FMLY</text>
+  </svg>
+  <div>
+    <div class="tag">ALLIANCE MEMBER PERFORMANCE</div>
+    <h1>HALO LNH FMLY</h1>
+    <div class="motto">One Family. Stronger Than Ever. Endless Victories!</div>
+  </div>
 </header>
+<div class="divider"></div>
+<div class="stamp" id="stamp"></div>
 <div class="src" id="src">Loading…</div>
 
 <!-- SUMMARY -->
@@ -114,6 +169,30 @@ nav button.on{background:var(--red);color:#fff}
   </div>
 </section>
 
+<!-- CHARTS -->
+<section class="view" id="v-charts">
+  <div class="card">
+    <h2>Player Ranking</h2>
+    <p class="how">Every player with their value. Pick the metric and the rank. On VS the dashed line is today's minimum; bar color = green meets it, amber 60%+, red below.</p>
+    <div class="mchips" id="metricChips"></div>
+    <div class="mchips" id="rankChips"></div>
+    <div class="legend" id="rankLegend"></div>
+    <div class="hbars" id="rankBars"></div>
+  </div>
+  <div class="card">
+    <h2>Combat Quadrant</h2>
+    <p class="how">Arena power (→) vs lifetime kills (↑), log scale. Dotted lines = alliance medians. Tap a dot to see the player. Top-right = war core; bottom-right = big power with few fights.</p>
+    <div id="quad"></div>
+    <div class="tip" id="quadTip">Tap a dot…</div>
+  </div>
+  <div class="card">
+    <h2>VS by HQ level</h2>
+    <p class="how">How each HQ level is doing vs today's minimum. Tap a color to list those players.</p>
+    <div id="hqBoard"></div>
+    <div class="tip" id="hqTip"></div>
+  </div>
+</section>
+
 <!-- SETUP -->
 <section class="view" id="v-setup">
   <div class="card">
@@ -157,6 +236,7 @@ nav button.on{background:var(--red);color:#fff}
 <nav id="nav">
   <button class="on" data-v="summary">SUMMARY</button>
   <button data-v="week">THIS WEEK</button>
+  <button data-v="charts">CHARTS</button>
   <button data-v="delta">WEEK vs WEEK</button>
   <button data-v="activity">ACTIVITY</button>
   <button data-v="ranks">RANKS</button>
@@ -169,7 +249,7 @@ nav button.on{background:var(--red);color:#fff}
 const DEFAULTS = {
   id:    '',                // Google Sheet ID
   live:  'BASE DE DATOS',   // live tab name or published CSV URL
-  prev:  '',                // previous capture tab (e.g. 2026.09.22)
+  prev:  'ANTERIOR',        // auto-copy of previous week (kept by the Apps Script)
   alias: 'Alias',
   hist:  'Historial'
 };
@@ -419,7 +499,7 @@ function renderAll(){
   const dstr = DATA_DATE ? DATA_DATE.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric',year:'numeric'}) : 'date unknown';
   $('#stamp').textContent = `Data captured ${dstr} · ` + (FINAL ? 'Week closed — full minimum' : `Mid-week · day ${DAY}/${VS_DAYS} · pace ${fmtM(target())}`);
   document.querySelectorAll('.dmin').forEach(e=>e.textContent=fmtM(DAILY_MIN));
-  renderSummary(); renderWeek(); renderDelta(); renderDaily(); renderActivity(); renderRanks(); fillCfg();
+  renderSummary(); renderWeek(); renderDelta(); renderDaily(); renderActivity(); renderRanks(); renderCharts(); fillCfg();
 }
 
 function below(){ return active().filter(p=>(p.vs||0)<target()).sort((a,b)=>(a.vs||0)-(b.vs||0)); }
@@ -441,7 +521,7 @@ function renderSummary(){
   const hlPos = hl ? [...CUR].sort((a,b)=>(b.vs||0)-(a.vs||0)).indexOf(hl)+1 : 0;
   let lines = [];
   lines.push(`<div class="line"><span class="ic">🛡️</span><div><b>${ok} / ${act.length}</b> ${FINAL?'met the weekly minimum':'are on pace'} (≥ ${fmtM(target())})<div class="bar"><i style="width:${pct.toFixed(1)}%"></i></div></div></div>`);
-  lines.push(`<div class="line"><span class="ic">⚠️</span><div><b>${bl.length} below ${FINAL?'minimum':'pace'}</b>${bl.length?': '+bl.slice(0,6).map(p=>`${esc(p.name)} ${fmtM(p.vs)}`).join(' · ')+(bl.length>6?` · +${bl.length-6} more`:''):' — everyone is on track 💪'}</div></div>`);
+  lines.push(`<div class="line"><span class="ic">⚠️</span><div style="flex:1"><b>${bl.length} below ${FINAL?'minimum':'pace'}</b>${bl.length?'':' — everyone is on track 💪'}${bl.length?`<div class="blist">${bl.map((p,i)=>{ const pc=Math.min(100,(p.vs||0)/target()*100); const c=pc>=60?'var(--amber)':'var(--red2)'; return `<div class="bl"><span class="n">${i+1}</span><span class="who">${esc(p.name)} <span class="pill m">${p.rank||'—'}</span></span><span class="v">${fmtM(p.vs)}</span><span class="meter"><i style="width:${pc.toFixed(0)}%;background:${c}"></i></span><span class="need">${Math.round(pc)}% · needs ${fmtM(target()-(p.vs||0))} more${p.seen!=null?' · seen '+fmtSeen(p.seen)+' ago':''}</span></div>`; }).join('')}</div>`:''}</div></div>`);
   if(ina.length) lines.push(`<div class="line"><span class="ic">💤</span><div><b>Inactive</b>: ${ina.map(p=>`${esc(p.name)} (${fmtSeen(p.seen)})`).join(' · ')}</div></div>`);
   else if(zero.length) lines.push(`<div class="line"><span class="ic">💤</span><div><b>Zero VS</b>: ${zero.map(p=>esc(p.name)).join(' · ')}</div></div>`);
   if(hl) lines.push(`<div class="line"><span class="ic">⭐</span><div><b>Spotlight</b>: ${esc(hl.name)} (${hl.rank||'—'}) with ${fmtM(hl.vs)} — #${hlPos} in the alliance.</div></div>`);
@@ -548,6 +628,86 @@ function renderRanks(){
   ${down.length?`<div class="chips">${down.map(p=>`<span class="chip">${esc(p.name)} ${fmtM(p.vs)}</span>`).join('')}</div>`:'<div class="empty">None this week.</div>'}
   ${FINAL?'':'<p class="how" style="margin-top:10px">Mid-week numbers — decide on Saturday\'s close.</p>'}`;
 }
+
+
+/* ============================ CHARTS ============================ */
+const METRICS = [
+  ['vs','VS'],['don','Donation'],['arena','Arena'],['power','Power'],['kills','Kills'],['alltime','All-Time VS']
+];
+let chartMetric='vs', chartRank='ALL';
+function paceColor(p){ const v=pacePct(p); return v==null?'#555':v>=100?'var(--green)':v>=60?'var(--amber)':'var(--red2)'; }
+function renderCharts(){ renderRankBars(); renderQuad(); renderHQ(); }
+
+function renderRankBars(){
+  const hasAT = CUR.some(p=>allTime(p)!=null);
+  $('#metricChips').innerHTML = METRICS.filter(([k])=>k!=='alltime'||hasAT)
+    .map(([k,l])=>`<button class="mchip ${k===chartMetric?'on':''}" onclick="chartMetric='${k}';renderRankBars()">${l}</button>`).join('');
+  const ranks=['ALL',...['R5','R4','R3','R2','R1'].filter(r=>CUR.some(p=>p.rank===r))];
+  $('#rankChips').innerHTML = ranks.map(r=>`<button class="mchip ${r===chartRank?'on':''}" onclick="chartRank='${r}';renderRankBars()">${r==='ALL'?'All ranks':r}</button>`).join('');
+  const val = p => chartMetric==='alltime' ? allTime(p) : p[chartMetric];
+  const list = CUR.filter(p=>chartRank==='ALL'||p.rank===chartRank).filter(p=>val(p)!=null).sort((a,b)=>val(b)-val(a));
+  if(!list.length){ $('#rankBars').innerHTML='<div class="empty">No data for this metric.</div>'; $('#rankLegend').innerHTML=''; return; }
+  const max = Math.max(...list.map(val), chartMetric==='vs'?target():0) || 1;
+  const isVS = chartMetric==='vs';
+  const med = median(list.map(val));
+  $('#rankLegend').innerHTML = isVS
+    ? `<span><i style="background:var(--green)"></i>meets ${fmtM(target())}</span><span><i style="background:var(--amber)"></i>60%+</span><span><i style="background:var(--red2)"></i>below</span><span>┆ minimum</span><span>median ${fmtM(med)}</span>`
+    : `<span>${list.length} players</span><span>median ${fmtM(med)}</span><span>total ${fmtM(list.reduce((a,p)=>a+val(p),0))}</span>`;
+  const pl = isVS ? `<span class="pl" style="left:${target()/max*100}%"></span>` : '';
+  $('#rankBars').innerHTML = list.map((p,i)=>{
+    const w = Math.max(val(p)/max*100, 0.5);
+    const col = isVS ? paceColor(p) : 'var(--red)';
+    const inside = w > 70;
+    return `<div class="hb" title="${esc(p.name)} · ${p.rank||''} · HQ ${p.hq??'—'}" onclick="toast('${esc(p.name).replace(/'/g,"\\'")}: ${fmtM(val(p))}')">
+      <span class="rk">${i+1}</span><span class="nm">${esc(p.name)}</span>
+      <span class="tr"><span class="fl" style="width:${w}%;background:${col}"></span>${pl}
+      <span class="vl" style="${inside?`right:${100-w}%;margin-right:4px;color:#fff`:`left:${w}%;margin-left:4px;color:var(--txt)`}">${fmtM(val(p))}</span></span></div>`;
+  }).join('');
+}
+
+function renderQuad(){
+  const pts = CUR.filter(p=>p.arena>0 && p.kills>0);
+  if(pts.length<3){ $('#quad').innerHTML='<div class="empty">Needs Arena and Kills.</div>'; return; }
+  const W=400,H=360,L=40,R=58,T=22,B=30;
+  const lx=v=>Math.log10(v), xs=pts.map(p=>lx(p.arena)), ys=pts.map(p=>lx(p.kills));
+  const x0=Math.min(...xs)-0.05,x1=Math.max(...xs)+0.05,y0=Math.min(...ys)-0.1,y1=Math.max(...ys)+0.1;
+  const X=v=>L+(lx(v)-x0)/(x1-x0)*(W-L-R), Y=v=>H-B-(lx(v)-y0)/(y1-y0)*(H-T-B);
+  const mx=median(pts.map(p=>p.arena)), my=median(pts.map(p=>p.kills));
+  const ticks=(a,b)=>{ const o=[]; for(let e=Math.floor(a);e<=Math.ceil(b);e++) for(const m of [1,2,5]){ const v=m*10**e; if(lx(v)>=a&&lx(v)<=b) o.push(v);} return o; };
+  const top = new Set([...pts].sort((a,b)=>b.kills-a.kills).slice(0,5).concat([...pts].sort((a,b)=>b.arena-a.arena).slice(0,2)).map(p=>p.name));
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block">`;
+  ticks(x0,x1).forEach(v=>{ s+=`<line x1="${X(v)}" x2="${X(v)}" y1="${T}" y2="${H-B}" stroke="#ffffff10"/><text x="${X(v)}" y="${H-B+16}" fill="#9a9aa2" font-size="10" text-anchor="middle">${fmtM(v)}</text>`; });
+  ticks(y0,y1).forEach(v=>{ s+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#ffffff10"/><text x="${L-6}" y="${Y(v)+4}" fill="#9a9aa2" font-size="10" text-anchor="end">${fmtM(v)}</text>`; });
+  s+=`<line x1="${X(mx)}" x2="${X(mx)}" y1="${T}" y2="${H-B}" stroke="#F2A3B3" stroke-dasharray="2 4"/><line x1="${L}" x2="${W-R}" y1="${Y(my)}" y2="${Y(my)}" stroke="#F2A3B3" stroke-dasharray="2 4"/>`;
+  s+=`<text x="${W-R-4}" y="${T-8}" fill="#7fdca2" font-size="11" text-anchor="end" font-weight="700">WAR CORE</text>`;
+  s+=`<text x="${W-R-4}" y="${H-B-8}" fill="#e0a02f" font-size="11" text-anchor="end" font-weight="700">BIG FARMS</text>`;
+  s+=`<text x="${L+6}" y="${T-8}" fill="#8fc3ff" font-size="11" font-weight="700">FIGHTERS</text>`;
+  s+=`<text x="${L+6}" y="${H-B-8}" fill="#9a9aa2" font-size="11" font-weight="700">GROWING</text>`;
+  s+=`<text x="${(L+W-R)/2}" y="${H-4}" fill="#9a9aa2" font-size="10" text-anchor="middle">Arena power →</text>`;
+  pts.forEach((p,i)=>{
+    const c=paceColor(p);
+    s+=`<circle cx="${X(p.arena)}" cy="${Y(p.kills)}" r="5" fill="${c}" fill-opacity=".85" stroke="#141416" style="cursor:pointer" onclick="quadTip(${i})"><title>${esc(p.name)}</title></circle>`;
+    if(top.has(p.name)) s+=`<text x="${X(p.arena)+8}" y="${Y(p.kills)+4}" fill="#ecebe8" font-size="10">${esc(p.name)}</text>`;
+  });
+  s+='</svg>';
+  $('#quad').innerHTML=s; window._qp=pts;
+}
+function quadTip(i){ const p=window._qp[i]; $('#quadTip').textContent=`${p.name} · ${p.rank||''} HQ ${p.hq??'—'} · Arena ${fmtM(p.arena)} · Kills ${fmtM(p.kills)} · VS ${fmtM(p.vs)}`; }
+
+function renderHQ(){
+  const g={}; active().forEach(p=>{ if(p.hq==null) return; (g[p.hq]=g[p.hq]||[]).push(p); });
+  const lv=Object.keys(g).map(Number).sort((a,b)=>b-a);
+  if(!lv.length){ $('#hqBoard').innerHTML='<div class="empty">No HQ column.</div>'; return; }
+  window._hq={};
+  $('#hqBoard').innerHTML = lv.map(h=>{
+    const ps=g[h], ok=ps.filter(p=>pacePct(p)>=100), cl=ps.filter(p=>pacePct(p)>=60&&pacePct(p)<100), lo=ps.filter(p=>(pacePct(p)??0)<60);
+    window._hq[h]={ok,cl,lo};
+    const seg=(arr,c,k)=>arr.length?`<span style="width:${arr.length/ps.length*100}%;background:${c}" onclick="hqTip(${h},'${k}')">${arr.length}</span>`:'';
+    const pct=Math.round(ok.length/ps.length*100);
+    return `<div class="hqrow"><b>HQ ${h}</b><div class="hqbar">${seg(ok,'var(--green)','ok')}${seg(cl,'var(--amber)','cl')}${seg(lo,'var(--red2)','lo')}</div><span class="pill ${pct>=90?'g':pct>=70?'y':'x'}">${pct}% · ${ps.length}</span></div>`;
+  }).join('');
+}
+function hqTip(h,k){ const l=window._hq[h][k].sort((a,b)=>(a.vs||0)-(b.vs||0)); $('#hqTip').innerHTML=`HQ ${h} · ${ {ok:'meeting',cl:'close',lo:'below'}[k] }: `+l.map(p=>`${esc(p.name)} ${fmtM(p.vs)}`).join(' · '); }
 
 /* ============================ MESSAGES ============================ */
 function copy(t){ (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Copied ✔')).catch(()=>{ prompt('Copy:',t); }); }
