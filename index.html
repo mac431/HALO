@@ -101,6 +101,11 @@ svg text{font-family:'Roboto Condensed',sans-serif}
 .pct .t u{position:absolute;top:-2px;bottom:-2px;left:50%;border-left:1px dashed #ffffff66}
 .cmp td{padding:5px 4px}
 .hb.hl{background:#A3273433;border-radius:4px}
+.mchips .sel{display:inline-flex;align-items:center;gap:6px;border-radius:14px;padding:4px 6px 4px 10px;font-size:12px;background:#1c1c1f;border:1px solid var(--edge)}
+.mchips .sel i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.mchips .sel b{cursor:pointer;color:var(--mut);padding:0 4px;font-weight:400}
+.hb.ms{background:#ffffff0d;border-radius:4px}
+.hb.ms .nm{font-weight:700}
 .toast{position:fixed;bottom:64px;left:50%;transform:translateX(-50%);background:#2f6b45;color:#fff;padding:8px 14px;border-radius:6px;font-size:13px;opacity:0;transition:.3s;pointer-events:none}
 .toast.on{opacity:1}
 </style>
@@ -200,6 +205,16 @@ svg text{font-family:'Roboto Condensed',sans-serif}
 
 <!-- CHARTS -->
 <section class="view" id="v-charts">
+  <div class="card">
+    <h2>Spotlight · compare</h2>
+    <p class="how">Pick several players. They are highlighted in the ranking and the quadrant, and compared side by side below.</p>
+    <div style="position:relative">
+      <input type="search" id="multiQ" placeholder="Add players…" autocomplete="off">
+      <div class="sugg" id="multiS"></div>
+    </div>
+    <div class="mchips" id="multiChips" style="margin-top:8px"></div>
+    <div class="tablewrap" id="multiTable"></div>
+  </div>
   <div class="card">
     <h2>Player Ranking</h2>
     <p class="how">Every player with their value. Pick the metric and the rank. On VS the dashed line is today's minimum; bar color = green meets it, amber 60%+, red below.</p>
@@ -666,7 +681,7 @@ const METRICS = [
 ];
 let chartMetric='vs', chartRank='ALL';
 function paceColor(p){ const v=pacePct(p); return v==null?'#555':v>=100?'var(--green)':v>=60?'var(--amber)':'var(--red2)'; }
-function renderCharts(){ renderRankBars(); renderQuad(); renderHQ(); }
+function renderCharts(){ renderMulti(); renderRankBars(); renderQuad(); renderHQ(); }
 
 function renderRankBars(){
   const hasAT = CUR.some(p=>allTime(p)!=null);
@@ -675,7 +690,10 @@ function renderRankBars(){
   const ranks=['ALL',...['R5','R4','R3','R2','R1'].filter(r=>CUR.some(p=>p.rank===r))];
   $('#rankChips').innerHTML = ranks.map(r=>`<button class="mchip ${r===chartRank?'on':''}" onclick="chartRank='${r}';renderRankBars()">${r==='ALL'?'All ranks':r}</button>`).join('');
   const val = p => chartMetric==='alltime' ? allTime(p) : p[chartMetric];
-  const list = CUR.filter(p=>chartRank==='ALL'||p.rank===chartRank).filter(p=>val(p)!=null).sort((a,b)=>val(b)-val(a));
+  const full = CUR.filter(p=>chartRank==='ALL'||p.rank===chartRank).filter(p=>val(p)!=null).sort((a,b)=>val(b)-val(a));
+  const posOf = new Map(full.map((p,i)=>[p.name,i+1]));
+  if(MULTI.length) $('#rankChips').innerHTML += `<button class="mchip ${onlySel?'on':''}" onclick="onlySel=!onlySel;renderRankBars()">★ Only selected (${MULTI.length})</button>`;
+  const list = (onlySel && MULTI.length) ? full.filter(p=>MULTI.includes(p.name)) : full;
   if(!list.length){ $('#rankBars').innerHTML='<div class="empty">No data for this metric.</div>'; $('#rankLegend').innerHTML=''; return; }
   const max = Math.max(...list.map(val), chartMetric==='vs'?target():0) || 1;
   const isVS = chartMetric==='vs';
@@ -688,9 +706,10 @@ function renderRankBars(){
     const w = Math.max(val(p)/max*100, 0.5);
     const col = isVS ? paceColor(p) : 'var(--red)';
     const inside = w > 70;
-    return `<div class="hb${p.name===SEL?' hl':''}" title="${esc(p.name)} · ${p.rank||''} · HQ ${p.hq??'—'}" onclick="openPlayer(${CUR.indexOf(p)})">
-      <span class="rk">${i+1}</span><span class="nm">${esc(p.name)}</span>
-      <span class="tr"><span class="fl" style="width:${w}%;background:${col}"></span>${pl}
+    const mc = MULTI.includes(p.name) ? multiColor(p.name) : null;
+    return `<div class="hb${p.name===SEL?' hl':''}${mc?' ms':''}" title="${esc(p.name)} · ${p.rank||''} · HQ ${p.hq??'—'}" onclick="openPlayer(${CUR.indexOf(p)})">
+      <span class="rk">${posOf.get(p.name)}</span><span class="nm" style="${mc?`color:${mc}`:''}">${mc?'● ':''}${esc(p.name)}</span>
+      <span class="tr"><span class="fl" style="width:${w}%;background:${mc&&!isVS?mc:col}"></span>${pl}
       <span class="vl" style="${inside?`right:${100-w}%;margin-right:4px;color:#fff`:`left:${w}%;margin-left:4px;color:var(--txt)`}">${fmtM(val(p))}</span></span></div>`;
   }).join('');
 }
@@ -714,12 +733,18 @@ function renderQuad(){
   s+=`<text x="${L+6}" y="${T-8}" fill="#8fc3ff" font-size="11" font-weight="700">FIGHTERS</text>`;
   s+=`<text x="${L+6}" y="${H-B-8}" fill="#9a9aa2" font-size="11" font-weight="700">GROWING</text>`;
   s+=`<text x="${(L+W-R)/2}" y="${H-4}" fill="#9a9aa2" font-size="10" text-anchor="middle">Arena power →</text>`;
+  const dim = MULTI.length>0;
   pts.forEach((p,i)=>{
     const c=paceColor(p);
-    s+=`<circle cx="${X(p.arena)}" cy="${Y(p.kills)}" r="5" fill="${c}" fill-opacity=".85" stroke="#141416" style="cursor:pointer" onclick="quadTip(${i})"><title>${esc(p.name)}</title></circle>`;
+    if(dim && MULTI.includes(p.name)) return;
+    s+=`<circle cx="${X(p.arena)}" cy="${Y(p.kills)}" r="5" fill="${c}" fill-opacity="${dim?.18:.85}" stroke="#141416" style="cursor:pointer" onclick="quadTip(${i})"><title>${esc(p.name)}</title></circle>`;
+    if(dim) return;
     if(p.name===SEL) s+=`<circle cx="${X(p.arena)}" cy="${Y(p.kills)}" r="10" fill="none" stroke="#fff" stroke-width="2.5"/><text x="${X(p.arena)+13}" y="${Y(p.kills)+4}" fill="#fff" font-size="12" font-weight="700">${esc(p.name)}</text>`;
     else if(top.has(p.name)) s+=`<text x="${X(p.arena)+8}" y="${Y(p.kills)+4}" fill="#ecebe8" font-size="10">${esc(p.name)}</text>`;
   });
+  if(dim) pts.forEach((p,i)=>{ if(!MULTI.includes(p.name)) return; const mc=multiColor(p.name);
+    s+=`<circle cx="${X(p.arena)}" cy="${Y(p.kills)}" r="8" fill="${mc}" stroke="#fff" stroke-width="2" style="cursor:pointer" onclick="quadTip(${i})"><title>${esc(p.name)}</title></circle>`;
+    s+=`<text x="${X(p.arena)+11}" y="${Y(p.kills)+4}" fill="${mc}" font-size="12" font-weight="700" paint-order="stroke" stroke="#141416" stroke-width="3">${esc(p.name)}</text>`; });
   s+='</svg>';
   $('#quad').innerHTML=s; window._qp=pts;
 }
@@ -843,6 +868,55 @@ function copyPersonal(){
   copy(m);
 }
 SEL = load('amps_sel');
+
+
+/* ============================ MULTI-SELECT SPOTLIGHT ============================ */
+let MULTI = (load('amps_multi')||[]), onlySel=false;
+const MCOLORS=['#F2A3B3','#7fdca2','#e0a02f','#8fc3ff','#c79bff','#5fd4d4','#ff8a65','#d4e157'];
+const multiColor = n => MCOLORS[MULTI.indexOf(n)%MCOLORS.length];
+let mIdx=0, mList=[];
+function multiInput(){
+  const q=$('#multiQ').value.trim();
+  mList = q ? CUR.map((p,i)=>({i,s:Math.max(score(q,p.name),score(q,p.raw))})).filter(x=>x.s>0&&!MULTI.includes(CUR[x.i].name)).sort((a,b)=>b.s-a.s).slice(0,8) : [];
+  mIdx=0; drawMulti();
+}
+function drawMulti(){
+  const el=$('#multiS');
+  if(!mList.length){ el.classList.remove('on'); el.innerHTML=''; return; }
+  el.innerHTML = mList.map((x,k)=>{ const p=CUR[x.i]; return `<div class="${k===mIdx?'act':''}" onmousedown="event.preventDefault();addMulti(${x.i})"><span>${esc(p.name)}</span><small>${p.rank||''} · HQ ${p.hq??'—'} · VS ${fmtM(p.vs)}</small></div>`; }).join('');
+  el.classList.add('on');
+}
+function addMulti(i){ const n=CUR[i].name; if(!MULTI.includes(n)) MULTI.push(n); store('amps_multi',MULTI); $('#multiQ').value=''; mList=[]; drawMulti(); renderCharts(); $('#multiQ').focus(); }
+function delMulti(n){ MULTI=MULTI.filter(x=>x!==n); if(!MULTI.length) onlySel=false; store('amps_multi',MULTI); renderCharts(); }
+function clearMulti(){ MULTI=[]; onlySel=false; store('amps_multi',MULTI); renderCharts(); }
+$('#multiQ').addEventListener('input',multiInput);
+$('#multiQ').addEventListener('keydown',e=>{
+  if(e.key==='Backspace' && !$('#multiQ').value && MULTI.length){ delMulti(MULTI[MULTI.length-1]); return; }
+  if(!mList.length) return;
+  if(e.key==='ArrowDown'){ mIdx=(mIdx+1)%mList.length; drawMulti(); e.preventDefault(); }
+  else if(e.key==='ArrowUp'){ mIdx=(mIdx-1+mList.length)%mList.length; drawMulti(); e.preventDefault(); }
+  else if(e.key==='Enter'){ addMulti(mList[mIdx].i); e.preventDefault(); }
+  else if(e.key==='Escape'){ mList=[]; drawMulti(); }
+});
+$('#multiQ').addEventListener('blur',()=>setTimeout(()=>{ mList=[]; drawMulti(); },150));
+
+function renderMulti(){
+  MULTI = MULTI.filter(n=>CUR.some(p=>p.name===n));
+  const sel = MULTI.map(n=>CUR.find(p=>p.name===n));
+  $('#multiChips').innerHTML = sel.map(p=>`<span class="sel"><i style="background:${multiColor(p.name)}"></i>${esc(p.name)}<b onclick="delMulti('${esc(p.name).replace(/'/g,"\\'")}')">✕</b></span>`).join('')
+    + (sel.length?`<button class="mchip" onclick="clearMulti()">Clear all</button>`:'');
+  if(!sel.length){ $('#multiTable').innerHTML=''; return; }
+  const rows=[
+    ['Rank',p=>p.rank||'—',null],['HQ',p=>p.hq??'—','hq'],
+    ['VS',p=>fmtM(p.vs),'vs'],[FINAL?'% Min':'Pace',p=>{const v=pacePct(p); return v==null?'—':`<span class="pill ${v>=100?'g':v>=60?'y':'x'}">${Math.round(v)}%</span>`;},null],
+    ['Donation',p=>fmtM(p.don),'don'],['Arena',p=>fmtM(p.arena),'arena'],['Power',p=>fmtM(p.power),'power'],['Kills',p=>fmtM(p.kills),'kills'],
+    ['Kills / M arena',p=>p.arena?fmtM(p.kills/(p.arena/1e6)):'—',null],['Seen',p=>fmtSeen(p.seen),null]
+  ];
+  const best = k => k ? Math.max(...sel.map(p=>p[k]??-Infinity)) : null;
+  $('#multiTable').innerHTML = `<table style="margin-top:6px"><tr><th></th>${sel.map(p=>`<th class="r" style="color:${multiColor(p.name)};cursor:pointer" onclick="openPlayer(${CUR.indexOf(p)})">${esc(p.name)}</th>`).join('')}</tr>
+    ${rows.map(([l,f,k])=>{ const b=best(k); return `<tr><td style="color:var(--mut)">${l}</td>${sel.map(p=>`<td class="r" style="${k&&sel.length>1&&p[k]===b?'color:#7fdca2;font-weight:700':''}">${f(p)}</td>`).join('')}</tr>`; }).join('')}
+  </table><p class="how" style="margin:6px 0 0">Green = best of the selection. Tap a name to open the full profile.</p>`;
+}
 
 /* ============================ MESSAGES ============================ */
 function copy(t){ (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Copied ✔')).catch(()=>{ prompt('Copy:',t); }); }
