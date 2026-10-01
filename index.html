@@ -48,6 +48,7 @@ td.r,th.r{text-align:right}
 .g{background:#1f3a2a;color:#7fdca2}.y{background:#3a2f18;color:var(--amber)}.x{background:#3d1a1f;color:#ff8a95}.n{background:#23303d;color:#8fc3ff}.m{background:#2a2a2e;color:var(--mut)}
 .days{display:flex;gap:3px}.d{width:16px;height:16px;border-radius:3px}
 .d.ok{background:var(--green)}.d.lo{background:var(--red2)}.d.na{background:#2a2a2e;border:1px dashed #555}
+.d.est{background-image:repeating-linear-gradient(45deg,#0006 0 3px,transparent 3px 6px)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}.chip{background:#1c1c1f;border:1px solid var(--edge);border-radius:14px;padding:4px 10px;font-size:12px}
 .up{color:#7fdca2}.dn{color:#ff8a95}
 .empty{color:var(--mut);font-size:13px;padding:14px;text-align:center;border:1px dashed var(--edge);border-radius:8px}
@@ -57,7 +58,9 @@ label{font-size:12px;color:var(--mut);display:block;margin:10px 0 4px}
 .btn.ghost{background:#1c1c1f;border:1px solid var(--edge);color:var(--txt)}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .sec{font-size:12px;color:var(--mut);margin:12px 0 6px;letter-spacing:.5px}
-nav{position:fixed;bottom:0;left:0;right:0;background:#0e0e10;border-top:2px solid var(--red);display:flex;justify-content:center;gap:2px;padding:6px 4px;overflow-x:auto}
+nav{position:fixed;bottom:0;left:0;right:0;background:#0e0e10;border-top:2px solid var(--red);display:flex;justify-content:flex-start;gap:2px;padding:6px 4px;overflow-x:auto}
+nav button:first-child{margin-left:auto}nav button:last-child{margin-right:auto}
+nav::-webkit-scrollbar{display:none}
 nav button{font-family:Oswald;font-size:12px;padding:8px 9px;border-radius:6px;color:var(--mut);background:none;border:0;cursor:pointer;white-space:nowrap}
 nav button.on{background:var(--red);color:#fff}
 .view{display:none}.view.on{display:block}
@@ -303,7 +306,107 @@ const VS_DAYS   = 6;        // Mon–Sat
 const INACTIVE_H = 72, AWAY_H = 24;
 
 /* Embedded fallback: last capture read by Claude */
-const LOCAL_CSV = `Jugador,Rango,HQ,Poder,ArenaPower,VS,Donacion,Kills,Nuevo,FechaDatos,LastSeen
+const LOCAL_CSV = `Jugador,Rango,HQ,Poder,ArenaPower,VS,Donacion,Kills,Nuevo,FechaDatos,LastSeen,VS_Mon,VS_Tue,VS_Wed,VS_Thu,DailyEstimated
+LAKIDIO,R5,30,276100000,167100000,138464411,62760,3906138,,2026-10-01,2h,18777728,39895561,39895561,39895561,Tue-Thu
+Macarr,R4,29,139500000,58100000,34265210,46080,1337537,,,Online,10051048,8071387,8071387,8071388,
+iKoren,R4,29,168700000,46800000,36758637,54600,1159360,,,Online,3494893,11087914,11087914,11087916,
+Kyotö,R4,29,116900000,41400000,22621518,40800,690341,,,Online,10792711,3942935,3942935,3942937,
+IRON ROSE,R4,29,152500000,46500000,23489567,60960,815743,,,22m,6883939,5535209,5535209,5535210,
+Anatselo7,R4,30,176600000,65800000,24655186,52680,2295831,,,24m,11088162,4522341,4522341,4522342,
+KillaFish,R4,28,171000000,56200000,19413905,50160,1066225,,,20m,3123048,5430285,5430285,5430287,
+Marce,R4,29,170100000,61200000,36926992,55440,951088,,,2h,7891416,9678525,9678525,9678526,
+Vaelis,R4,30,207900000,96300000,32894676,56400,3910751,,,4h,5339565,9185037,9185037,9185037,
+Killabilla,R3,28,155300000,55000000,18948275,47280,418385,,,Online,4456605,4830556,4830556,4830558,
+FinnWolf,R3,27,152300000,27100000,19043825,57840,148117,,,Online,3367318,5225502,5225502,5225503,
+SIMA-LOVE,R3,27,146400000,35200000,25607458,41000,259711,,,Online,2202015,7801814,7801814,7801815,
+RIKASI,R3,27,125800000,28800000,9160141,46680,423560,,,Online,0,3053380,3053380,3053381,
+esthersilveira,R3,27,125600000,19100000,13584763,43080,19683,,,Online,3835460,3249767,3249767,3249769,
+kPetro,R3,29,124800000,55600000,35654521,56160,1264056,,,Online,9690559,8654654,8654654,8654654,
+КЕЙ,R3,28,121800000,33800000,8058939,51720,598142,,,Online,1756925,2100671,2100671,2100672,
+Fênix1,R3,29,146500000,51600000,32531336,46080,563915,,,1m,5897296,8878013,8878013,8878014,
+Hey Daddy,R3,28,128500000,41300000,16768649,47400,393831,,,3m,4332721,4145309,4145309,4145310,
+Spidergas,R3,28,152300000,39800000,25336374,46560,593914,,,6m,7742291,5864694,5864694,5864695,
+Abed joma120,R3,28,99000000,30400000,18820604,52680,359464,,,8m,7406019,3804861,3804861,3804863,
+Kuaris,R3,27,127400000,28100000,15382785,53400,129036,,,8m,2915202,4155861,4155861,4155861,
+STVX,R3,30,158900000,58100000,33657318,48360,2431565,,,10m,6686392,8990308,8990308,8990310,
+STVXDANICAFARM,R3,27,151800000,29000000,25413262,42360,177152,,,10m,4714735,6899509,6899509,6899509,
+Tertullian,R3,27,165600000,44200000,14783574,41760,445673,,,12m,5041450,3247374,3247374,3247376,
+Moonglade,R3,27,138500000,50200000,22355608,56640,1107055,,,12m,6696878,5219576,5219576,5219578,
+ηατsυ,R3,27,121900000,28400000,12957001,40680,445899,,,14m,4586693,2790102,2790102,2790104,
+PickledNinja,R3,27,123700000,23700000,16769500,37320,99894,,,14m,7622072,3049142,3049142,3049144,
+BIHAR,R3,28,125300000,30300000,19812231,42120,954492,,,15m,5110555,4900558,4900558,4900560,
+卡拉賓,R3,28,126600000,33500000,10265564,38400,225040,,,16m,1492236,2924442,2924442,2924444,
+Araashi,R3,27,118000000,23700000,9721598,40080,230570,,,21m,2443927,2425890,2425890,2425891,
+hoodmell2,R3,28,144600000,51400000,7801677,27720,103823,,,23m,2442294,1786461,1786461,1786461,
+David 0001,R3,27,133400000,24400000,14470686,43200,306095,,,27m,5505788,2988299,2988299,2988300,
+KluczyK,R3,28,150400000,35000000,18785747,45720,372163,,,30m,3874679,4970356,4970356,4970356,
+YaiYai8989,R3,27,133700000,33800000,23465683,52180,476199,,,35m,5266117,6066522,6066522,6066522,
+тошко,R3,27,143900000,25000000,8190437,48240,107233,,,40m,2103857,2028860,2028860,2028860,
+Gethuk Lindri,R3,27,114000000,24500000,3754893,34240,152097,,,1h,1355157,799912,799912,799912,
+Onde-onde,R3,28,141800000,36800000,24673001,39580,538674,,,1h,22351939,773687,773687,773688,
+RaenyDaze,R3,28,118700000,33000000,20437981,28680,17267,,,2h,3327338,5703547,5703547,5703549,
+Aya57,R3,29,154500000,44600000,24756012,28920,468209,,,2h,5085103,6556969,6556969,6556971,
+Yu-Jinn,R3,27,109700000,36800000,9644008,32400,646115,,,2h,4568282,1691908,1691908,1691910,
+○ • ○,R3,27,115300000,27400000,15746743,45000,336864,,,2h,6115301,3210480,3210480,3210482,
+One Moree,R3,28,123900000,37900000,9440050,33960,687496,,,2h,1739259,2566930,2566930,2566931,
+akiles,R3,27,108200000,27200000,10452970,51080,534672,,,3h,3071472,2460499,2460499,2460500,
+Bruno akd,R3,29,128200000,25400000,17134109,47620,1051284,,,3h,3329731,4601459,4601459,4601460,
+Slamet 5,R3,27,107400000,26100000,27047923,48340,77993,,,3h,9474080,5857947,5857947,5857949,
+ikistøker,R3,29,179400000,52800000,37433182,36720,1165653,,,4h,10880334,8850949,8850949,8850950,
+Texastacofien,R3,27,157600000,31000000,14804267,48600,47860,,,4h,3436889,3789126,3789126,3789126,
+• Mythos •,R3,30,210400000,82200000,58210579,49440,3230854,,,5h,15458848,14250577,14250577,14250577,
+IngeFher v2,R3,27,130300000,27900000,13709789,35040,446339,,,5h,2534669,3725040,3725040,3725040,
+SR 873,R3,27,116800000,32300000,6066097,41880,669274,,,6h,2306696,1253133,1253133,1253135,
+kbs gamesyt,R3,27,121100000,38200000,9056979,41400,109792,,,6h,2105316,2317221,2317221,2317221,
+Baby drvu,R3,27,141100000,45000000,11169735,39480,415428,,,7h,3216443,2651097,2651097,2651098,
+Cath-alina,R3,27,134100000,23600000,7674530,15600,123521,,,8h,2005335,1889731,1889731,1889733,
+BanikJnr,R3,27,87600000,27900000,9852441,32280,338918,,,8h,3936422,1972006,1972006,1972007,
+SkullDevil,R3,27,132600000,29300000,22528092,13320,601849,,,9h,3094831,6477753,6477753,6477755,
+moon 20,R3,28,112800000,24900000,7680530,16920,283519,,,11h,6017466,554354,554354,554356,
+Silent BoB,R3,27,158800000,37200000,0,0,445817,,,Inactive 4d,0,0,0,0,
+Laong Laan,R2,27,145600000,29000000,15810388,57780,298334,,,Online,3629402,4060328,4060328,4060330,
+Mr SRiNU,R2,27,127200000,23800000,13895395,34440,160428,,,Online,4216621,3226258,3226258,3226258,
+Flashaso,R2,27,111400000,15900000,13815972,41320,99101,,,Online,8596782,1739730,1739730,1739730,
+YUDISTIRAWIJAYA,R2,28,126600000,14900000,15935724,46080,352233,,,4m,8722836,2404296,2404296,2404296,
+aauroraa,R2,27,105300000,13400000,10046657,23280,67031,,,6m,2235855,2603600,2603600,2603602,
+Jeal,R2,27,131900000,31300000,13303142,43320,111470,,,24m,3908182,3131653,3131653,3131654,
+Aqua Trident,R2,27,93500000,14200000,8731615,46920,78521,,,31m,2680751,2016954,2016954,2016956,
+rafouss,R2,26,111500000,15800000,12448894,46800,101323,,,38m,3031057,3139279,3139279,3139279,
+Mangata,R2,27,108800000,23100000,14241325,39840,305846,,,52m,5298722,2980867,2980867,2980869,
+Lycanh,R2,27,118000000,19700000,15885529,46360,399606,,,1h,3944518,3980337,3980337,3980337,
+DevilIL,R2,26,101700000,21400000,17476207,27220,225796,,,1h,6550050,3642052,3642052,3642053,
+shiva120,R2,27,106700000,19500000,11259086,38940,262823,,,1h,3744012,2505024,2505024,2505026,
+TRUEC,R2,26,100900000,18100000,12384817,43080,96542,,,3h,3063822,3106998,3106998,3106999,
+Yurintines,R2,27,114200000,19900000,15562705,37440,110248,,,4h,4336317,3742129,3742129,3742130,
+salvador FC,R2,27,116000000,20300000,7003023,19080,366200,,,5h,1882281,1706914,1706914,1706914,
+LATAN,R2,27,125400000,18000000,5535125,43200,74124,,,5h,2687600,949175,949175,949175,
+GODOFWAR18,R2,26,118700000,15900000,6768541,38040,109554,,,5h,3928309,946744,946744,946744,
+Cepi91,R2,26,91700000,14000000,13137380,37920,72291,,,5h,2514885,3540831,3540831,3540833,
+vickey07,R2,27,113700000,13100000,5479021,18240,182440,,,6h,3279957,733021,733021,733022,
+DeniM,R2,27,109200000,16500000,11017376,30340,98658,,,6h,1911641,3035245,3035245,3035245,
+saya20,R2,26,118100000,11200000,6918327,32400,51519,,,6h,2976128,1314066,1314066,1314067,
+Emma-nuela,R2,27,119900000,13900000,14798670,44740,19370,,,7h,4570367,3409434,3409434,3409435,
+Anisa bangor,R2,26,107800000,11800000,10913166,24840,93439,,,8h,3441748,2490472,2490472,2490474,
+PANAGIOTHS 1,R2,27,121400000,16000000,5521706,33000,114526,,,13h,3793417,576096,576096,576097,
+Macarr Farm,R1,27,118100000,22000000,3722947,19800,481596,,,1m,1508029,738306,738306,738306,
+Femor,R1,27,130400000,26500000,8415966,41040,189984,,,21m,3584835,1610377,1610377,1610377,
+JJORGE,R1,27,131500000,31700000,14484602,44640,140537,,,1h,5006405,3159399,3159399,3159399,
+Burgerakos,R1,27,137200000,31100000,14048532,48600,285968,,,1h,3616566,3477322,3477322,3477322,
+Mr oxygen,R1,27,121900000,32400000,7126873,51480,255785,,,2h,2728143,1466243,1466243,1466244,
+Knight-Rod,R1,27,123600000,20100000,13528986,49680,204489,,,2h,4884465,2881507,2881507,2881507,
+Pilgrim,R1,27,145400000,42000000,20594814,45480,148340,,,3h,4969197,5208539,5208539,5208539,
+カタリス,R1,27,109600000,14600000,11538966,41640,152185,,,5h,3536252,2667571,2667571,2667572,
+Andrea 71,R1,26,102800000,17200000,6590383,19200,116755,,,5h,3318514,1090623,1090623,1090623,
+BLACK WIDDOW,R1,27,115900000,25000000,5522566,25680,530638,,,5h,2265823,1085581,1085581,1085581,
+DrCrosz,R1,27,133900000,21400000,6075060,44480,185278,,,6h,744294,1776922,1776922,1776922,
+RoN3roZero87,R1,27,144100000,24500000,7999075,36720,306312,,,7h,1601811,2132421,2132421,2132422,
+Sinfra,R1,27,135400000,23600000,14120954,46680,177329,,,7h,4952322,3056210,3056210,3056212,
+NADAELSA,R1,28,145700000,27200000,12578146,40800,403035,,,9h,2339784,3412787,3412787,3412788,
+GKAR,R1,27,126000000,44700000,9781525,34080,688514,,,11h,3813606,1989306,1989306,1989307,
+Sava81,R1,26,94800000,18400000,6570377,26500,25688,,,23h,3380429,1063316,1063316,1063316,
+JAXH THE SLAYER,R1,26,100600000,13300000,1520379,3480,93946,,,Inactive 3d,1520379,0,0,0,
+Doler G,R1,27,97000000,45500000,0,0,753980,,,Inactive 11d,0,0,0,0,`;
+const LOCAL_PREV_CSV = `Jugador,Rango,HQ,Poder,ArenaPower,VS,Donacion,Kills,Nuevo,FechaDatos,LastSeen
 LAKIDIO,R5,30,261100000,164500000,26791478,24840,3898361,,2026-09-29,
 Macarr,R4,29,129500000,56300000,12917503,10920,1322818,,,
 KillaFish,R4,28,160400000,54300000,5390092,26760,1064726,,,
@@ -402,7 +505,8 @@ Macarr Farm,R1,27,104800000,22000000,2739421,6720,480977,,,
 Sava81,R1,26,91300000,18300000,4399733,12840,25688,,,
 Andrea 71,R1,26,99000000,17200000,4044565,6720,116497,,,
 JAXH THE SLAYER,R1,26,100700000,13300000,1520379,3480,93946,,,
-Doler G,R1,27,97000000,45500000,0,0,753980,,,Inactive 9d`;
+Doler G,R1,27,97000000,45500000,0,0,753980,,,Inactive 9d`;  // previous capture, used for Week vs Week when no sheet tab is loaded
+let EST=new Set();  // day indexes that are prorated estimates
 
 /* ============================ UTIL ============================ */
 const $ = s => document.querySelector(s);
@@ -507,9 +611,13 @@ async function loadAll(){
   catch(e){ notes.push('live sheet failed: '+e.message); cls='warn'; }
   if(!rows||!rows.length){ rows=parseCSV(LOCAL_CSV); SOURCE='Embedded capture'; if(cls==='ok') cls='warn'; }
   CUR = normalize(rows);
+  // estimated (prorated) daily VS, e.g. DailyEstimated = "Tue-Thu"
+  EST=new Set(); { const r0=rows.find(r=>pick(r,['DailyEstimated'])); const m=r0&&pick(r0,['DailyEstimated']).match(/(Mon|Tue|Wed|Thu|Fri|Sat)\s*-\s*(Mon|Tue|Wed|Thu|Fri|Sat)/i);
+    const D=['mon','tue','wed','thu','fri','sat']; if(m){ for(let i=D.indexOf(m[1].toLowerCase());i<=D.indexOf(m[2].toLowerCase());i++) EST.add(i); } }
   // previous
   PREV=null;
   try{ const p = MANUAL.prev || await fetchCSV(CFG.prev); if(p&&p.length) PREV=normalize(p); }catch(e){ notes.push('previous failed: '+e.message); }
+  if(!PREV && LOCAL_PREV_CSV.indexOf('__PREV__')<0){ const lp=normalize(parseCSV(LOCAL_PREV_CSV)); const d1=(lp.find(x=>x.date)||{}).date, d2=(CUR.find(x=>x.date)||{}).date; if(d1&&d2&&d1<d2){ PREV=lp; notes.push('previous: embedded '+d1); } }
   // history
   HIST=null;
   try{ const h = MANUAL.hist || await fetchCSV(CFG.hist); if(h&&h.length) HIST=h; }catch(e){}
@@ -570,7 +678,7 @@ function renderSummary(){
   if(ina.length) lines.push(`<div class="line"><span class="ic">💤</span><div><b>Inactive</b>: ${ina.map(p=>`${esc(p.name)} (${fmtSeen(p.seen)})`).join(' · ')}</div></div>`);
   else if(zero.length) lines.push(`<div class="line"><span class="ic">💤</span><div><b>Zero VS</b>: ${zero.map(p=>esc(p.name)).join(' · ')}</div></div>`);
   if(hl) lines.push(`<div class="line"><span class="ic">⭐</span><div><b>Spotlight</b>: ${esc(hl.name)} (${hl.rank||'—'}) with ${fmtM(hl.vs)} — #${hlPos} in the alliance.</div></div>`);
-  if(PREV){ const d=deltas().filter(x=>x.status==='FROZEN'); if(d.length) lines.push(`<div class="line"><span class="ic">🧊</span><div><b>Frozen vs last week</b>: ${d.map(x=>esc(x.p.name)).join(' · ')}</div></div>`); }
+  if(PREV){ const d=deltas().filter(x=>x.status==='FROZEN'); if(d.length) lines.push(`<div class="line"><span class="ic">🧊</span><div><b>Frozen since last capture</b>: ${d.map(x=>esc(x.p.name)).join(' · ')}</div></div>`); }
   $('#summaryLines').innerHTML = lines.join('');
 }
 
@@ -625,7 +733,7 @@ function renderDelta(){
   const count=s=>d.filter(x=>x.status===s).length;
   $('#deltaBox').innerHTML = `<div class="chips" style="margin-bottom:10px">${['WAR','ACTIVE','FARM','FROZEN','NEW','LEFT'].map(s=>`<span class="chip"><span class="pill ${STATUS_CLS[s]}">${s}</span> ${count(s)}</span>`).join('')}</div>
   <p class="how">WAR = kills gained ≥ alliance median · FARM = growing but under 25% of median kills · FROZEN = no kills, no arena, no power growth.</p>
-  <div class="tablewrap"><table><tr><th>Player</th><th class="r">+Kills</th><th class="r">+Arena</th><th class="r">+Power</th><th class="r">Last wk VS</th><th class="r">Status</th></tr>
+  <div class="tablewrap"><table><tr><th>Player</th><th class="r">+Kills</th><th class="r">+Arena</th><th class="r">+Power</th><th class="r">Prev VS</th><th class="r">Status</th></tr>
   ${d.map(x=>`<tr><td>${esc(x.p.name)}</td><td class="r ${x.dk>0?'up':x.dk<0?'dn':''}">${sgn(x.dk)}</td><td class="r ${x.da>0?'up':x.da<0?'dn':''}">${sgn(x.da)}</td><td class="r ${x.dp>0?'up':x.dp<0?'dn':''}">${sgn(x.dp)}</td><td class="r">${fmtM(x.prevVS)}</td><td class="r"><span class="pill ${STATUS_CLS[x.status]}">${x.status}</span></td></tr>`).join('')}
   </table></div>`;
 }
@@ -637,9 +745,10 @@ function renderDaily(){
   const rows=CUR.map(p=>{ const ok=p.days.slice(0,upto).filter(v=>v!=null&&v>=DAILY_MIN).length; return {p,ok}; }).sort((a,b)=>a.ok-b.ok||(a.p.vs||0)-(b.p.vs||0));
   const dayTot=DAY_KEYS.map((_,i)=>CUR.reduce((a,p)=>a+(p.days[i]||0),0));
   const lbl=['Mon','Tue','Wed','Thu','Fri','Sat'];
-  $('#dailyBox').innerHTML = `<div class="chips" style="margin-bottom:10px">${lbl.slice(0,upto).map((l,i)=>`<span class="chip">${l}: ${fmtM(dayTot[i])}</span>`).join('')}</div>
+  $('#dailyBox').innerHTML = `<div class="chips" style="margin-bottom:10px">${lbl.slice(0,upto).map((l,i)=>`<span class="chip">${l}: ${fmtM(dayTot[i])}${EST.has(i)?'*':''}</span>`).join('')}</div>
+  ${EST.size?`<p class="how">* Striped days are <b>estimates</b>: the week total minus the known days, split evenly. Real daily values fill in from each new capture.</p>`:''}
   <div class="tablewrap"><table><tr><th>Player</th><th>${lbl.map(l=>l[0]).join(' ')}</th><th class="r">Days OK</th></tr>
-  ${rows.map(({p,ok})=>`<tr><td>${esc(p.name)}</td><td><div class="days">${p.days.map((v,i)=>`<span class="d ${i>=upto||v==null?'na':v>=DAILY_MIN?'ok':'lo'}" title="${lbl[i]} ${fmtM(v)}"></span>`).join('')}</div></td><td class="r">${ok}/${upto}</td></tr>`).join('')}
+  ${rows.map(({p,ok})=>`<tr><td>${esc(p.name)}</td><td><div class="days">${p.days.map((v,i)=>`<span class="d ${i>=upto||v==null?'na':v>=DAILY_MIN?'ok':'lo'}${EST.has(i)&&i<upto?' est':''}" title="${lbl[i]} ${fmtM(v)}${EST.has(i)?' (est.)':''}"></span>`).join('')}</div></td><td class="r">${ok}/${upto}</td></tr>`).join('')}
   </table></div>`;
 }
 
@@ -830,10 +939,10 @@ function renderProfile(){
   flags.push([zone,zone==='WAR CORE'?'g':zone==='BIG FARM'?'y':'m']);
   // delta
   let deltaHTML='';
-  if(PREV){ const d=deltas().find(x=>x.p.name===p.name); if(d&&d.status!=='NEW') deltaHTML=`<div class="sec">WEEK vs WEEK</div><table class="cmp"><tr><td>+Kills</td><td class="r ${d.dk>0?'up':''}">${sgn(d.dk)}</td><td>+Arena</td><td class="r ${d.da>0?'up':d.da<0?'dn':''}">${sgn(d.da)}</td></tr><tr><td>+Power</td><td class="r ${d.dp>0?'up':d.dp<0?'dn':''}">${sgn(d.dp)}</td><td>Last wk VS</td><td class="r">${fmtM(d.prevVS)}</td></tr></table><div style="margin-top:4px"><span class="pill ${STATUS_CLS[d.status]}">${d.status}</span></div>`; }
+  if(PREV){ const d=deltas().find(x=>x.p.name===p.name); if(d&&d.status!=='NEW') deltaHTML=`<div class="sec">WEEK vs WEEK</div><table class="cmp"><tr><td>+Kills</td><td class="r ${d.dk>0?'up':''}">${sgn(d.dk)}</td><td>+Arena</td><td class="r ${d.da>0?'up':d.da<0?'dn':''}">${sgn(d.da)}</td></tr><tr><td>+Power</td><td class="r ${d.dp>0?'up':d.dp<0?'dn':''}">${sgn(d.dp)}</td><td>Prev VS</td><td class="r">${fmtM(d.prevVS)}</td></tr></table><div style="margin-top:4px"><span class="pill ${STATUS_CLS[d.status]}">${d.status}</span></div>`; }
   const hasDaily=p.days.some(v=>v!=null);
   const lbl=['Mon','Tue','Wed','Thu','Fri','Sat'];
-  const dailyHTML = hasDaily ? `<div class="sec">DAILY VS</div><table class="cmp"><tr>${lbl.map(l=>`<td style="text-align:center;color:var(--mut)">${l}</td>`).join('')}</tr><tr>${p.days.map((v,i)=>`<td style="text-align:center" class="${v==null?'':v>=DAILY_MIN?'up':'dn'}">${i<DAY?fmtM(v):'·'}</td>`).join('')}</tr></table>` : '';
+  const dailyHTML = hasDaily ? `<div class="sec">DAILY VS</div><table class="cmp"><tr>${lbl.map(l=>`<td style="text-align:center;color:var(--mut)">${l}</td>`).join('')}</tr><tr>${p.days.map((v,i)=>`<td style="text-align:center" class="${v==null?'':v>=DAILY_MIN?'up':'dn'}">${i<DAY?fmtM(v)+(EST.has(i)?'*':''):'·'}</td>`).join('')}</tr></table>` : '';
   const at=allTime(p);
   $('#profile').innerHTML = `<div class="card">
     <div class="prof-hd"><div><h2>${esc(p.name)}</h2><div style="color:var(--mut);font-size:13px;margin-top:4px">${p.rank||'—'} · HQ ${p.hq??'—'}${p.raw!==p.name?' · in-game: '+esc(p.raw):''}</div></div>
