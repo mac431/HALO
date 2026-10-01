@@ -172,14 +172,19 @@ svg text{font-family:'Roboto Condensed',sans-serif}
 <!-- WEEK VS WEEK -->
 <section class="view" id="v-delta">
   <div class="card">
-    <h2>Week vs Week</h2>
-    <p class="how">Current capture minus previous capture. Kills and power are lifetime totals in the game — the change is what shows real activity.</p>
+    <h2>Since last capture</h2>
+    <p class="how">Current capture minus the previous one. Mon–Fri the focus is VS and steady power growth; Saturday (war) the focus is kills.</p>
     <div id="deltaBox"></div>
   </div>
   <div class="card">
     <h2>Daily VS consistency</h2>
     <p class="how">Green = day with ≥ <span class="dmin"></span>. Red = below. Needs daily columns (VS_Mon … VS_Sat) in the capture.</p>
     <div id="dailyBox"></div>
+  </div>
+  <div class="card">
+    <h2>Canyon · Friday</h2>
+    <p class="how">Attendance and score in Friday's Canyon.</p>
+    <div id="canyonBox"></div>
   </div>
 </section>
 
@@ -228,7 +233,7 @@ svg text{font-family:'Roboto Condensed',sans-serif}
   </div>
   <div class="card">
     <h2>Combat Quadrant</h2>
-    <p class="how">Arena power (→) vs lifetime kills (↑), log scale. Dotted lines = alliance medians. Tap a dot to see the player. Top-right = war core; bottom-right = big power with few fights.</p>
+    <p class="how">Arena power (→) vs lifetime kills (↑), log scale. Dotted lines = alliance medians. Tap a dot to see the player. Top-right = WARRIORS; bottom-right = FARMS (big power, few fights).</p>
     <div id="quad"></div>
     <div class="tip" id="quadTip">Tap a dot…</div>
   </div>
@@ -285,7 +290,7 @@ svg text{font-family:'Roboto Condensed',sans-serif}
   <button data-v="week">THIS WEEK</button>
   <button data-v="charts">CHARTS</button>
   <button data-v="player">PLAYER</button>
-  <button data-v="delta">WEEK vs WEEK</button>
+  <button data-v="delta">PROGRESS</button>
   <button data-v="activity">ACTIVITY</button>
   <button data-v="ranks">RANKS</button>
   <button data-v="setup">SETUP</button>
@@ -541,7 +546,8 @@ const KEYS = {
   power:['Power','Poder','PersonalPower'], arena:['ArenaPower','Arena'], vs:['VS'],
   don:['Donation','Donacion','Donación'], kills:['Kills'], isNew:['New','Nuevo'],
   date:['DataDate','FechaDatos'], seen:['LastSeen','UltimaVez','Seen'],
-  week:['Week','Semana'], canon:['Canonical','Canonico','Canónico','Main'], alltime:['AllTimeVS']
+  week:['Week','Semana'], canon:['Canonical','Canonico','Canónico','Main'], alltime:['AllTimeVS'],
+  canyonA:['CanyonAttend','CanyonAsistencia','AsistenciaCanyon','Canyon'], canyonS:['CanyonScore','CanyonPuntos','PuntosCanyon']
 };
 const DAY_KEYS = [['VS_Mon','VS_Lun'],['VS_Tue','VS_Mar'],['VS_Wed','VS_Mie','VS_Mié'],['VS_Thu','VS_Jue'],['VS_Fri','VS_Vie'],['VS_Sat','VS_Sab','VS_Sáb']];
 function pick(o, keys){ for(const k of keys){ const hit=Object.keys(o).find(x=>x.toLowerCase()===k.toLowerCase()); if(hit!==undefined && o[hit]!=='') return o[hit]; } return ''; }
@@ -567,7 +573,8 @@ function normalize(rows){
       don:num(pick(r,KEYS.don)), kills:num(pick(r,KEYS.kills)),
       isNew:/^(1|y|yes|si|sí|true|x)$/i.test(pick(r,KEYS.isNew)),
       date:pick(r,KEYS.date), seen:seenHours(pick(r,KEYS.seen)),
-      days:DAY_KEYS.map(ks=>num(pick(r,ks))), alltimeCol:num(pick(r,KEYS.alltime))
+      days:DAY_KEYS.map(ks=>num(pick(r,ks))), alltimeCol:num(pick(r,KEYS.alltime)),
+      canyonA:(v=>v===''?null:/^(1|y|yes|si|sí|x|true|✓)$/i.test(v))(pick(r,KEYS.canyonA)), canyonS:num(pick(r,KEYS.canyonS))
     };
   }).filter(Boolean);
 }
@@ -652,7 +659,7 @@ function renderAll(){
   const dstr = DATA_DATE ? DATA_DATE.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric',year:'numeric'}) : 'date unknown';
   $('#stamp').textContent = `Data captured ${dstr} · ` + (FINAL ? 'Week closed — full minimum' : `Mid-week · day ${DAY}/${VS_DAYS} · pace ${fmtM(target())}`);
   document.querySelectorAll('.dmin').forEach(e=>e.textContent=fmtM(DAILY_MIN));
-  renderSummary(); renderWeek(); renderDelta(); renderDaily(); renderActivity(); renderRanks(); renderCharts(); renderProfile(); fillCfg();
+  renderSummary(); renderWeek(); renderDelta(); renderDaily(); renderCanyon(); renderActivity(); renderRanks(); renderCharts(); renderProfile(); fillCfg();
 }
 
 function below(){ return active().filter(p=>(p.vs||0)<target()).sort((a,b)=>(a.vs||0)-(b.vs||0)); }
@@ -673,12 +680,15 @@ function renderSummary(){
   const hl = [...CUR].filter(p=>!['R4','R5'].includes(p.rank)).sort((a,b)=>(b.vs||0)-(a.vs||0))[0];
   const hlPos = hl ? [...CUR].sort((a,b)=>(b.vs||0)-(a.vs||0)).indexOf(hl)+1 : 0;
   let lines = [];
+  const wd=DATA_DATE?DATA_DATE.getDay():1;
+  const focus = wd===5 ? '🏜️ <b>Friday</b> — Canyon attendance & score; power should be at its peak.' : (wd===6||wd===0) ? '⚔️ <b>Saturday</b> — war day: kills decide.' : '📈 <b>Weekday</b> — VS every day + grow power steadily toward Friday.';
+  lines.push(`<div class="line"><span class="ic">🗓️</span><div>${focus}</div></div>`);
   lines.push(`<div class="line"><span class="ic">🛡️</span><div><b>${ok} / ${act.length}</b> ${FINAL?'met the weekly minimum':'are on pace'} (≥ ${fmtM(target())})<div class="bar"><i style="width:${pct.toFixed(1)}%"></i></div></div></div>`);
   lines.push(`<div class="line"><span class="ic">⚠️</span><div style="flex:1"><b>${bl.length} below ${FINAL?'minimum':'pace'}</b>${bl.length?'':' — everyone is on track 💪'}${bl.length?`<div class="blist">${bl.map((p,i)=>{ const pc=Math.min(100,(p.vs||0)/target()*100); const c=pc>=60?'var(--amber)':'var(--red2)'; return `<div class="bl"><span class="n">${i+1}</span><span class="who">${esc(p.name)} <span class="pill m">${p.rank||'—'}</span></span><span class="v">${fmtM(p.vs)}</span><span class="meter"><i style="width:${pc.toFixed(0)}%;background:${c}"></i></span><span class="need">${Math.round(pc)}% · needs ${fmtM(target()-(p.vs||0))} more${p.seen!=null?' · seen '+fmtSeen(p.seen)+' ago':''}</span></div>`; }).join('')}</div>`:''}</div></div>`);
   if(ina.length) lines.push(`<div class="line"><span class="ic">💤</span><div><b>Inactive</b>: ${ina.map(p=>`${esc(p.name)} (${fmtSeen(p.seen)})`).join(' · ')}</div></div>`);
   else if(zero.length) lines.push(`<div class="line"><span class="ic">💤</span><div><b>Zero VS</b>: ${zero.map(p=>esc(p.name)).join(' · ')}</div></div>`);
   if(hl) lines.push(`<div class="line"><span class="ic">⭐</span><div><b>Spotlight</b>: ${esc(hl.name)} (${hl.rank||'—'}) with ${fmtM(hl.vs)} — #${hlPos} in the alliance.</div></div>`);
-  if(PREV){ const d=deltas().filter(x=>x.status==='FROZEN'); if(d.length) lines.push(`<div class="line"><span class="ic">🧊</span><div><b>Frozen since last capture</b>: ${d.map(x=>esc(x.p.name)).join(' · ')}</div></div>`); }
+  if(PREV){ const d=deltas().filter(x=>x.status==='FROZEN'); if(d.length) lines.push(`<div class="line"><span class="ic">🧊</span><div><b>Frozen since last capture (no VS, power, arena or kills)</b>: ${d.map(x=>esc(x.p.name)).join(' · ')}</div></div>`); }
   $('#summaryLines').innerHTML = lines.join('');
 }
 
@@ -704,6 +714,19 @@ function renderWeek(){
 }
 function sortBy(k){ if(sortKey===k) sortDir*=-1; else { sortKey=k; sortDir=(k==='name'||k==='rank')?1:-1; } renderWeek(); }
 
+/* Weekly rhythm of [HALO]:
+   Mon–Fri  → VS is what matters + power grows gradually toward Friday
+   Friday   → Canyon attendance + score
+   Saturday → war day: kills decide */
+/* Combat profile — same zones as the Combat Quadrant (Arena vs lifetime kills, alliance medians) */
+function combatProfile(p){
+  if(p.arena==null||p.kills==null) return null;
+  const mA=median(CUR.map(x=>x.arena)), mK=median(CUR.map(x=>x.kills));
+  return p.arena>=mA ? (p.kills>=mK?'WARRIOR':'FARM') : (p.kills>=mK?'FIGHTER':'GROWING');
+}
+const PROF_CLS={WARRIOR:'g',FIGHTER:'n',FARM:'y',GROWING:'m'};
+let profFilter=null;
+const isWarDay = () => DATA_DATE ? [6,0].includes(DATA_DATE.getDay()) : false;
 function deltas(){
   if(!PREV) return [];
   const pm=Object.fromEntries(PREV.map(p=>[p.name,p]));
@@ -714,28 +737,60 @@ function deltas(){
     const dp=(p.power!=null&&o.power!=null)?p.power-o.power:null;
     return {p,dk,da,dp,prevVS:o.vs};
   });
+  const war=isWarDay();
   const medK=median(out.filter(x=>x.dk!=null&&x.dk>0).map(x=>x.dk))||0;
   out.forEach(x=>{
     if(x.status) return;
-    if((x.dk??0)<=0 && (x.da??0)<=0 && (x.dp??0)<=0) x.status='FROZEN';
-    else if((x.dk??0)>=medK && medK>0) x.status='WAR';
-    else if((x.dk??0)<medK*0.25) x.status='FARM';
-    else x.status='ACTIVE';
+    const grew=(x.dp??0)>0||(x.da??0)>0;
+    if(!grew && (x.dk??0)<=0 && !(x.p.vs>0 && x.p.vs>(x.prevVS||0))) { x.status='FROZEN'; return; }
+    if(war){
+      if((x.dk??0)>=medK && medK>0) x.status='WAR';
+      else if((x.dk??0)>=medK*0.25) x.status='FOUGHT';
+      else x.status='NO FIGHT';
+    } else {
+      const onPace=(x.p.vs||0)>=target();
+      x.status = onPace ? (grew?'STRONG':'ON PACE') : (grew?'GROWING':'STALLED');
+    }
   });
   const cur=new Set(CUR.map(p=>p.name));
   PREV.filter(o=>!cur.has(o.name)).forEach(o=>out.push({p:o,status:'LEFT'}));
   return out;
 }
-const STATUS_CLS={WAR:'g',ACTIVE:'g',FARM:'y',FROZEN:'x',NEW:'n',LEFT:'m'};
+const STATUS_CLS={STRONG:'g','ON PACE':'g',GROWING:'y',STALLED:'x',WAR:'g',FOUGHT:'g','NO FIGHT':'y',FROZEN:'x',NEW:'n',LEFT:'m'};
 function renderDelta(){
-  if(!PREV){ $('#deltaBox').innerHTML=`<div class="empty">No previous capture loaded yet.<br>Add the previous week's tab name in <b>Setup</b> (e.g. 2026.09.22) — this view fills in automatically.</div>`; return; }
-  const d=deltas().sort((a,b)=>(b.dk??-1e15)-(a.dk??-1e15));
+  if(!PREV){ $('#deltaBox').innerHTML=`<div class="empty">No previous capture loaded yet.<br>Add the previous tab name in <b>Setup</b> — this view fills in automatically.</div>`; return; }
+  const war=isWarDay();
+  const d=deltas().sort(war?((a,b)=>(b.dk??-1e15)-(a.dk??-1e15)):((a,b)=>(b.dp??-1e15)-(a.dp??-1e15)));
+  const order = war ? ['WAR','FOUGHT','NO FIGHT','FROZEN','NEW','LEFT'] : ['STRONG','ON PACE','GROWING','STALLED','FROZEN','NEW','LEFT'];
   const count=s=>d.filter(x=>x.status===s).length;
-  $('#deltaBox').innerHTML = `<div class="chips" style="margin-bottom:10px">${['WAR','ACTIVE','FARM','FROZEN','NEW','LEFT'].map(s=>`<span class="chip"><span class="pill ${STATUS_CLS[s]}">${s}</span> ${count(s)}</span>`).join('')}</div>
-  <p class="how">WAR = kills gained ≥ alliance median · FARM = growing but under 25% of median kills · FROZEN = no kills, no arena, no power growth.</p>
-  <div class="tablewrap"><table><tr><th>Player</th><th class="r">+Kills</th><th class="r">+Arena</th><th class="r">+Power</th><th class="r">Prev VS</th><th class="r">Status</th></tr>
-  ${d.map(x=>`<tr><td>${esc(x.p.name)}</td><td class="r ${x.dk>0?'up':x.dk<0?'dn':''}">${sgn(x.dk)}</td><td class="r ${x.da>0?'up':x.da<0?'dn':''}">${sgn(x.da)}</td><td class="r ${x.dp>0?'up':x.dp<0?'dn':''}">${sgn(x.dp)}</td><td class="r">${fmtM(x.prevVS)}</td><td class="r"><span class="pill ${STATUS_CLS[x.status]}">${x.status}</span></td></tr>`).join('')}
+  const totP=d.reduce((a,x)=>a+(x.dp>0?x.dp:0),0);
+  const pc=s=>CUR.filter(p=>combatProfile(p)===s).length;
+  const rows=profFilter?d.filter(x=>combatProfile(x.p)===profFilter):d;
+  $('#deltaBox').innerHTML = `<div class="sec">COMBAT PROFILE (tap to filter)</div><div class="mchips">${['WARRIOR','FIGHTER','FARM','GROWING'].map(s=>`<button class="mchip ${profFilter===s?'on':''}" onclick="profFilter=profFilter==='${s}'?null:'${s}';renderDelta()"><span class="pill ${PROF_CLS[s]}">${s}</span> ${pc(s)}</button>`).join('')}</div>
+  <p class="how">WARRIOR = big Arena + many kills · FIGHTER = smaller Arena but many kills · FARM = big Arena, few kills · GROWING = small Arena, few kills. Based on lifetime kills vs alliance medians.</p>
+  <div class="sec">${war?'WAR DAY':'THIS WEEK'}</div><div class="chips" style="margin-bottom:8px">${order.map(s=>`<span class="chip"><span class="pill ${STATUS_CLS[s]}">${s}</span> ${count(s)}</span>`).join('')}</div>
+  <p class="how">${war
+    ? '⚔️ <b>War day</b> — kills decide. WAR = kills gained ≥ alliance median · FOUGHT = 25%+ of the median · NO FIGHT = less.'
+    : `📈 <b>Weekday mode</b> — VS + power growth toward Friday. Kills are only judged on Saturday.<br>STRONG = on VS pace and power/arena grew · ON PACE = on pace, no growth · GROWING = grew but behind on VS · STALLED = behind and no growth. Alliance power gained: <b>${fmtM(totP)}</b>.`}
+    FROZEN = nothing moved.</p>
+  <div class="tablewrap"><table><tr><th>Player</th><th class="r">+Power</th><th class="r">+Arena</th><th class="r">${war?'+Kills':'VS pace'}</th><th class="r">${war?'Prev VS':'+Kills'}</th><th class="r">Profile</th><th class="r">Status</th></tr>
+  ${rows.map(x=>{ const cp=combatProfile(x.p); const pp=pacePct(x.p); const paceTd=pp==null?'—':`<span class="pill ${pp>=100?'g':pp>=60?'y':'x'}">${Math.round(pp)}%</span>`;
+    return `<tr><td>${esc(x.p.name)}</td><td class="r ${x.dp>0?'up':x.dp<0?'dn':''}">${sgn(x.dp)}</td><td class="r ${x.da>0?'up':x.da<0?'dn':''}">${sgn(x.da)}</td>
+    <td class="r ${war&&x.dk>0?'up':''}">${war?sgn(x.dk):paceTd}</td><td class="r">${war?fmtM(x.prevVS):sgn(x.dk)}</td><td class="r">${cp?`<span class="pill ${PROF_CLS[cp]}">${cp}</span>`:'—'}</td><td class="r"><span class="pill ${STATUS_CLS[x.status]}">${x.status}</span></td></tr>`; }).join('')}
   </table></div>`;
+}
+
+function renderCanyon(){
+  const has=CUR.some(p=>p.canyonA!=null||p.canyonS!=null);
+  if(!has){ $('#canyonBox').innerHTML=`<div class="empty">No Canyon data in this capture.<br>Friday's capture adds <b>CanyonAttend</b> (x = attended) and <b>CanyonScore</b>.</div>`; return; }
+  const act=active(), went=act.filter(p=>p.canyonA===true||(p.canyonS||0)>0), miss=act.filter(p=>!(p.canyonA===true||(p.canyonS||0)>0));
+  const pct=act.length?went.length/act.length*100:0;
+  const top=[...went].sort((a,b)=>(b.canyonS||0)-(a.canyonS||0));
+  const max=Math.max(1,...top.map(p=>p.canyonS||0));
+  $('#canyonBox').innerHTML = `<div class="kpis"><div class="kpi"><b>${went.length} / ${act.length}</b><span>attended (${Math.round(pct)}%)</span></div><div class="kpi"><b>${fmtM(top.reduce((a,p)=>a+(p.canyonS||0),0))}</b><span>total score</span></div><div class="kpi"><b>${fmtM(median(top.map(p=>p.canyonS)))}</b><span>median score</span></div></div>
+  ${miss.length?`<div class="sec">❌ DID NOT ATTEND (${miss.length})</div><div class="chips">${miss.map(p=>`<span class="chip">${esc(p.name)}</span>`).join('')}</div>`:'<div class="sec">✅ Full attendance</div>'}
+  <div class="sec">SCORE</div>
+  <div class="hbars">${top.map((p,i)=>`<div class="hb" onclick="openPlayer(${CUR.indexOf(p)})"><span class="rk">${i+1}</span><span class="nm">${esc(p.name)}</span><span class="tr"><span class="fl" style="width:${Math.max(.5,(p.canyonS||0)/max*100)}%;background:var(--red)"></span><span class="vl" style="left:${Math.min(85,(p.canyonS||0)/max*100)}%;margin-left:4px">${fmtM(p.canyonS)}</span></span></div>`).join('')}</div>`;
 }
 
 function renderDaily(){
@@ -837,8 +892,8 @@ function renderQuad(){
   ticks(x0,x1).forEach(v=>{ s+=`<line x1="${X(v)}" x2="${X(v)}" y1="${T}" y2="${H-B}" stroke="#ffffff10"/><text x="${X(v)}" y="${H-B+16}" fill="#9a9aa2" font-size="10" text-anchor="middle">${fmtM(v)}</text>`; });
   ticks(y0,y1).forEach(v=>{ s+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#ffffff10"/><text x="${L-6}" y="${Y(v)+4}" fill="#9a9aa2" font-size="10" text-anchor="end">${fmtM(v)}</text>`; });
   s+=`<line x1="${X(mx)}" x2="${X(mx)}" y1="${T}" y2="${H-B}" stroke="#F2A3B3" stroke-dasharray="2 4"/><line x1="${L}" x2="${W-R}" y1="${Y(my)}" y2="${Y(my)}" stroke="#F2A3B3" stroke-dasharray="2 4"/>`;
-  s+=`<text x="${W-R-4}" y="${T-8}" fill="#7fdca2" font-size="11" text-anchor="end" font-weight="700">WAR CORE</text>`;
-  s+=`<text x="${W-R-4}" y="${H-B-8}" fill="#e0a02f" font-size="11" text-anchor="end" font-weight="700">BIG FARMS</text>`;
+  s+=`<text x="${W-R-4}" y="${T-8}" fill="#7fdca2" font-size="11" text-anchor="end" font-weight="700">WARRIORS</text>`;
+  s+=`<text x="${W-R-4}" y="${H-B-8}" fill="#e0a02f" font-size="11" text-anchor="end" font-weight="700">FARMS</text>`;
   s+=`<text x="${L+6}" y="${T-8}" fill="#8fc3ff" font-size="11" font-weight="700">FIGHTERS</text>`;
   s+=`<text x="${L+6}" y="${H-B-8}" fill="#9a9aa2" font-size="11" font-weight="700">GROWING</text>`;
   s+=`<text x="${(L+W-R)/2}" y="${H-4}" fill="#9a9aa2" font-size="10" text-anchor="middle">Arena power →</text>`;
@@ -930,16 +985,16 @@ function renderProfile(){
   const kpmMed = median(CUR.filter(x=>x.arena).map(x=>x.kills/(x.arena/1e6)));
   // zone
   const mA=median(CUR.map(x=>x.arena)), mK=median(CUR.map(x=>x.kills));
-  const zone = p.arena==null||p.kills==null ? '—' : p.arena>=mA ? (p.kills>=mK?'WAR CORE':'BIG FARM') : (p.kills>=mK?'FIGHTER':'GROWING');
+  const zone = combatProfile(p)||'—';
   // flags
   const flags=[];
   if(p.isNew) flags.push(['NEW · rookie shield','n']);
   if(pp!=null) flags.push(pp>=100?[FINAL?'MET MINIMUM':'ON PACE','g']:pp>=60?['CLOSE','y']:['BELOW','x']);
   if(p.seen!=null) flags.push(p.seen>=INACTIVE_H?['INACTIVE '+fmtSeen(p.seen),'x']:p.seen>=AWAY_H?['AWAY '+fmtSeen(p.seen),'x']:['Seen '+fmtSeen(p.seen)+(p.seen?' ago':''),'m']);
-  flags.push([zone,zone==='WAR CORE'?'g':zone==='BIG FARM'?'y':'m']);
+  flags.push([zone,PROF_CLS[zone]||'m']);
   // delta
   let deltaHTML='';
-  if(PREV){ const d=deltas().find(x=>x.p.name===p.name); if(d&&d.status!=='NEW') deltaHTML=`<div class="sec">WEEK vs WEEK</div><table class="cmp"><tr><td>+Kills</td><td class="r ${d.dk>0?'up':''}">${sgn(d.dk)}</td><td>+Arena</td><td class="r ${d.da>0?'up':d.da<0?'dn':''}">${sgn(d.da)}</td></tr><tr><td>+Power</td><td class="r ${d.dp>0?'up':d.dp<0?'dn':''}">${sgn(d.dp)}</td><td>Prev VS</td><td class="r">${fmtM(d.prevVS)}</td></tr></table><div style="margin-top:4px"><span class="pill ${STATUS_CLS[d.status]}">${d.status}</span></div>`; }
+  if(PREV){ const d=deltas().find(x=>x.p.name===p.name); if(d&&d.status!=='NEW') deltaHTML=`<div class="sec">SINCE LAST CAPTURE</div><table class="cmp"><tr><td>+Kills</td><td class="r ${d.dk>0?'up':''}">${sgn(d.dk)}</td><td>+Arena</td><td class="r ${d.da>0?'up':d.da<0?'dn':''}">${sgn(d.da)}</td></tr><tr><td>+Power</td><td class="r ${d.dp>0?'up':d.dp<0?'dn':''}">${sgn(d.dp)}</td><td>Prev VS</td><td class="r">${fmtM(d.prevVS)}</td></tr></table><div style="margin-top:4px"><span class="pill ${STATUS_CLS[d.status]}">${d.status}</span></div>`; }
   const hasDaily=p.days.some(v=>v!=null);
   const lbl=['Mon','Tue','Wed','Thu','Fri','Sat'];
   const dailyHTML = hasDaily ? `<div class="sec">DAILY VS</div><table class="cmp"><tr>${lbl.map(l=>`<td style="text-align:center;color:var(--mut)">${l}</td>`).join('')}</tr><tr>${p.days.map((v,i)=>`<td style="text-align:center" class="${v==null?'':v>=DAILY_MIN?'up':'dn'}">${i<DAY?fmtM(v)+(EST.has(i)?'*':''):'·'}</td>`).join('')}</tr></table>` : '';
