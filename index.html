@@ -147,6 +147,1130 @@ svg text{font-family:'Roboto Condensed',sans-serif}
 <div class="divider"></div>
 <div class="stamp" id="stamp"></div>
 <div class="src" id="src">Loading…</div>
+<div class="src warn" id="stale" style="display:none"></div>
+<div class="spot"><div style="position:relative">
+  <input type="search" id="spotQ" placeholder="Spotlight — find a player…" autocomplete="off">
+  <div class="sugg" id="spotS"></div>
+</div></div>
+
+<!-- SUMMARY -->
+<section class="view on" id="v-summary">
+  <div class="kpis" id="kpis"></div>
+  <div class="card">
+    <h2>Summary · 8 seconds</h2>
+    <p class="how">Alliance health at a glance.</p>
+    <div id="summaryLines"></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn ghost" onclick="copyCheckIn()">Copy check-in message</button>
+      <button class="btn ghost" onclick="copyShoutout()">Copy shoutout message</button>
+    </div>
+  </div>
+</section>
+
+<!-- THIS WEEK -->
+<section class="view" id="v-week">
+  <div class="card">
+    <h2>This Week</h2>
+    <p class="how">Tap a column to sort. Pace % = VS vs. the minimum expected by today.</p>
+    <input type="search" id="q" placeholder="Search player…" oninput="renderWeek()">
+    <div class="tablewrap" style="margin-top:10px"><table id="weekTable"></table></div>
+  </div>
+</section>
+
+<!-- WEEK VS WEEK -->
+<section class="view" id="v-delta">
+  <div class="card">
+    <h2>Since last capture</h2>
+    <p class="how">Current capture minus the previous one. Mon–Fri the focus is VS and steady power growth; Saturday (war) the focus is kills.</p>
+    <div id="deltaBox"></div>
+  </div>
+  <div class="card">
+    <h2>Daily VS consistency</h2>
+    <p class="how">Green = day with ≥ <span class="dmin"></span>. Red = below. Needs daily columns (VS_Mon … VS_Sat) in the capture.</p>
+    <div id="dailyBox"></div>
+  </div>
+  <div class="card">
+    <h2>Canyon · Friday</h2>
+    <p class="how">Attendance and score in Friday's Canyon.</p>
+    <div id="canyonBox"></div>
+  </div>
+</section>
+
+<!-- ACTIVITY -->
+<section class="view" id="v-activity">
+  <div class="card">
+    <h2>Activity · last seen</h2>
+    <p class="how">From the Members list ("2h ago", "1d ago", "Inactive"). Flags inactivity before the week closes.</p>
+    <div id="activityBox"></div>
+  </div>
+</section>
+
+<!-- RANKS -->
+<section class="view" id="v-ranks">
+  <div class="card">
+    <h2>Rank suggestions</h2>
+    <p class="how">Each player vs. the median of their own rank. Suggestions only — command decides.</p>
+    <div id="rankBox"></div>
+  </div>
+</section>
+
+<!-- PLAYER -->
+<section class="view" id="v-player">
+  <div id="profile"><div class="card"><div class="empty">Search a player in Spotlight above to see the full profile.</div></div></div>
+</section>
+
+<!-- CHARTS -->
+<section class="view" id="v-charts">
+  <div class="card">
+    <h2>Spotlight · compare</h2>
+    <p class="how">Pick several players. They are highlighted in the ranking and the quadrant, and compared side by side below.</p>
+    <div style="position:relative">
+      <input type="search" id="multiQ" placeholder="Add players…" autocomplete="off">
+      <div class="sugg" id="multiS"></div>
+    </div>
+    <div class="mchips" id="multiChips" style="margin-top:8px"></div>
+    <div class="tablewrap" id="multiTable"></div>
+  </div>
+  <div class="card">
+    <h2>Player Ranking</h2>
+    <p class="how">Every player with their value. Pick the metric and the rank. On VS the dashed line is today's minimum; bar color = green meets it, amber 60%+, red below.</p>
+    <div class="mchips" id="metricChips"></div>
+    <div class="mchips" id="rankChips"></div>
+    <div class="legend" id="rankLegend"></div>
+    <div class="hbars" id="rankBars"></div>
+  </div>
+  <div class="card">
+    <h2>Combat Quadrant</h2>
+    <p class="how">Arena power (→) vs lifetime kills (↑), log scale. Dotted lines = alliance medians. Tap a dot to see the player. Top-right = WARRIORS; bottom-right = FARMS (big power, few fights).</p>
+    <div id="quad"></div>
+    <div class="tip" id="quadTip">Tap a dot…</div>
+  </div>
+  <div class="card">
+    <h2>VS by HQ level</h2>
+    <p class="how">How each HQ level is doing vs today's minimum. Tap a color to list those players.</p>
+    <div id="hqBoard"></div>
+    <div class="tip" id="hqTip"></div>
+  </div>
+</section>
+
+<!-- SETUP -->
+<section class="view" id="v-setup">
+  <div class="card">
+    <h2>Data sources</h2>
+    <p class="how">Each field accepts a <b>tab name</b> (uses the Sheet ID) or a full <b>published CSV URL</b>. Saved on this device only.</p>
+    <label>Google Sheet ID (the long code in the sheet URL)</label>
+    <input type="text" id="cfgId">
+    <label>Current capture (live tab)</label>
+    <input type="text" id="cfgLive">
+    <label>Previous capture (for Week vs Week) — e.g. 2026.09.22</label>
+    <input type="text" id="cfgPrev">
+    <label>Alias tab (columns: Name, Canonical)</label>
+    <input type="text" id="cfgAlias">
+    <label>History tab (columns: Week, Player, VS) — for All-Time VS</label>
+    <input type="text" id="cfgHist">
+    <div class="row" style="margin-top:12px">
+      <button class="btn" onclick="saveCfg()">Save & reload</button>
+      <button class="btn ghost" onclick="resetCfg()">Reset</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Load CSV files manually</h2>
+    <p class="how">No sheet access? Load the CSV files directly (this session only).</p>
+    <label>Current capture CSV</label><input type="file" accept=".csv" onchange="loadFile(this,'live')">
+    <label>Previous capture CSV</label><input type="file" accept=".csv" onchange="loadFile(this,'prev')">
+    <label>Alias CSV</label><input type="file" accept=".csv" onchange="loadFile(this,'alias')">
+    <label>History CSV</label><input type="file" accept=".csv" onchange="loadFile(this,'hist')">
+  </div>
+  <div class="card">
+    <h2>Capture columns</h2>
+    <p class="how">Header names accepted in English or Spanish.</p>
+    <div style="font-size:13px;line-height:1.6">
+      <b>Required:</b> Player/Jugador · VS<br>
+      <b>Recommended:</b> Rank/Rango · HQ · Power/Poder · ArenaPower · Donation/Donacion · Kills · DataDate/FechaDatos · LastSeen · New/Nuevo<br>
+      <b>Daily VS:</b> VS_Mon · VS_Tue · VS_Wed · VS_Thu · VS_Fri · VS_Sat
+    </div>
+  </div>
+</section>
+</div>
+
+<nav id="nav">
+  <button class="on" data-v="summary">SUMMARY</button>
+  <button data-v="week">THIS WEEK</button>
+  <button data-v="charts">CHARTS</button>
+  <button data-v="player">PLAYER</button>
+  <button data-v="delta">PROGRESS</button>
+  <button data-v="activity">ACTIVITY</button>
+  <button data-v="ranks">RANKS</button>
+  <button data-v="setup">SETUP</button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================ CONFIG ============================ */
+const SHEET_PUB = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS-8zUNQQ_AbWrIQ6WA4c9cpkp9SkM0jB9WERhb8R6ByRU1MxNi_mQdaZ0J-pzZoWqp6DLdkkoKVi2a/pub';
+const DEFAULTS = {
+  id:    '',                                                    // Google Sheet ID (only for tab-name sources)
+  live:  SHEET_PUB + '?gid=1561395588&single=true&output=csv',  // BASE DE DATOS (published CSV)
+  prev:  SHEET_PUB + '?gid=1668247934&single=true&output=csv',  // ANTERIOR (published CSV)
+  alias: '',
+  hist:  ''
+};
+const DAILY_MIN = 1.5e6;    // VS per day
+const VS_DAYS   = 6;        // Mon–Sat
+const INACTIVE_H = 72, AWAY_H = 24;
+
+/* Embedded fallback: last capture read by Claude */
+const LOCAL_CSV = `Jugador,Rango,HQ,Poder,ArenaPower,VS,Donacion,Kills,Nuevo,FechaDatos,LastSeen,VS_Mon,VS_Tue,VS_Wed,VS_Thu,DailyEstimated
+LAKIDIO,R5,30,276100000,167100000,138464411,62760,3906138,,2026-10-01,2h,18777728,39895561,39895561,39895561,Tue-Thu
+Macarr,R4,29,139500000,58100000,34265210,46080,1337537,,,Online,10051048,8071387,8071387,8071388,
+iKoren,R4,29,168700000,46800000,36758637,54600,1159360,,,Online,3494893,11087914,11087914,11087916,
+Kyotö,R4,29,116900000,41400000,22621518,40800,690341,,,Online,10792711,3942935,3942935,3942937,
+IRON ROSE,R4,29,152500000,46500000,23489567,60960,815743,,,22m,6883939,5535209,5535209,5535210,
+Anatselo7,R4,30,176600000,65800000,24655186,52680,2295831,,,24m,11088162,4522341,4522341,4522342,
+KillaFish,R4,28,171000000,56200000,19413905,50160,1066225,,,20m,3123048,5430285,5430285,5430287,
+Marce,R4,29,170100000,61200000,36926992,55440,951088,,,2h,7891416,9678525,9678525,9678526,
+Vaelis,R4,30,207900000,96300000,32894676,56400,3910751,,,4h,5339565,9185037,9185037,9185037,
+Killabilla,R3,28,155300000,55000000,18948275,47280,418385,,,Online,4456605,4830556,4830556,4830558,
+FinnWolf,R3,27,152300000,27100000,19043825,57840,148117,,,Online,3367318,5225502,5225502,5225503,
+SIMA-LOVE,R3,27,146400000,35200000,25607458,41000,259711,,,Online,2202015,7801814,7801814,7801815,
+RIKASI,R3,27,125800000,28800000,9160141,46680,423560,,,Online,0,3053380,3053380,3053381,
+esthersilveira,R3,27,125600000,19100000,13584763,43080,19683,,,Online,3835460,3249767,3249767,3249769,
+kPetro,R3,29,124800000,55600000,35654521,56160,1264056,,,Online,9690559,8654654,8654654,8654654,
+КЕЙ,R3,28,121800000,33800000,8058939,51720,598142,,,Online,1756925,2100671,2100671,2100672,
+Fênix1,R3,29,146500000,51600000,32531336,46080,563915,,,1m,5897296,8878013,8878013,8878014,
+Hey Daddy,R3,28,128500000,41300000,16768649,47400,393831,,,3m,4332721,4145309,4145309,4145310,
+Spidergas,R3,28,152300000,39800000,25336374,46560,593914,,,6m,7742291,5864694,5864694,5864695,
+Abed joma120,R3,28,99000000,30400000,18820604,52680,359464,,,8m,7406019,3804861,3804861,3804863,
+Kuaris,R3,27,127400000,28100000,15382785,53400,129036,,,8m,2915202,4155861,4155861,4155861,
+STVX,R3,30,158900000,58100000,33657318,48360,2431565,,,10m,6686392,8990308,8990308,8990310,
+STVXDANICAFARM,R3,27,151800000,29000000,25413262,42360,177152,,,10m,4714735,6899509,6899509,6899509,
+Tertullian,R3,27,165600000,44200000,14783574,41760,445673,,,12m,5041450,3247374,3247374,3247376,
+Moonglade,R3,27,138500000,50200000,22355608,56640,1107055,,,12m,6696878,5219576,5219576,5219578,
+ηατsυ,R3,27,121900000,28400000,12957001,40680,445899,,,14m,4586693,2790102,2790102,2790104,
+PickledNinja,R3,27,123700000,23700000,16769500,37320,99894,,,14m,7622072,3049142,3049142,3049144,
+BIHAR,R3,28,125300000,30300000,19812231,42120,954492,,,15m,5110555,4900558,4900558,4900560,
+卡拉賓,R3,28,126600000,33500000,10265564,38400,225040,,,16m,1492236,2924442,2924442,2924444,
+Araashi,R3,27,118000000,23700000,9721598,40080,230570,,,21m,2443927,2425890,2425890,2425891,
+hoodmell2,R3,28,144600000,51400000,7801677,27720,103823,,,23m,2442294,1786461,1786461,1786461,
+David 0001,R3,27,133400000,24400000,14470686,43200,306095,,,27m,5505788,2988299,2988299,2988300,
+KluczyK,R3,28,150400000,35000000,18785747,45720,372163,,,30m,3874679,4970356,4970356,4970356,
+YaiYai8989,R3,27,133700000,33800000,23465683,52180,476199,,,35m,5266117,6066522,6066522,6066522,
+тошко,R3,27,143900000,25000000,8190437,48240,107233,,,40m,2103857,2028860,2028860,2028860,
+Gethuk Lindri,R3,27,114000000,24500000,3754893,34240,152097,,,1h,1355157,799912,799912,799912,
+Onde-onde,R3,28,141800000,36800000,24673001,39580,538674,,,1h,22351939,773687,773687,773688,
+RaenyDaze,R3,28,118700000,33000000,20437981,28680,17267,,,2h,3327338,5703547,5703547,5703549,
+Aya57,R3,29,154500000,44600000,24756012,28920,468209,,,2h,5085103,6556969,6556969,6556971,
+Yu-Jinn,R3,27,109700000,36800000,9644008,32400,646115,,,2h,4568282,1691908,1691908,1691910,
+○ • ○,R3,27,115300000,27400000,15746743,45000,336864,,,2h,6115301,3210480,3210480,3210482,
+One Moree,R3,28,123900000,37900000,9440050,33960,687496,,,2h,1739259,2566930,2566930,2566931,
+akiles,R3,27,108200000,27200000,10452970,51080,534672,,,3h,3071472,2460499,2460499,2460500,
+Bruno akd,R3,29,128200000,25400000,17134109,47620,1051284,,,3h,3329731,4601459,4601459,4601460,
+Slamet 5,R3,27,107400000,26100000,27047923,48340,77993,,,3h,9474080,5857947,5857947,5857949,
+ikistøker,R3,29,179400000,52800000,37433182,36720,1165653,,,4h,10880334,8850949,8850949,8850950,
+Texastacofien,R3,27,157600000,31000000,14804267,48600,47860,,,4h,3436889,3789126,3789126,3789126,
+• Mythos •,R3,30,210400000,82200000,58210579,49440,3230854,,,5h,15458848,14250577,14250577,14250577,
+IngeFher v2,R3,27,130300000,27900000,13709789,35040,446339,,,5h,2534669,3725040,3725040,3725040,
+SR 873,R3,27,116800000,32300000,6066097,41880,669274,,,6h,2306696,1253133,1253133,1253135,
+kbs gamesyt,R3,27,121100000,38200000,9056979,41400,109792,,,6h,2105316,2317221,2317221,2317221,
+Baby drvu,R3,27,141100000,45000000,11169735,39480,415428,,,7h,3216443,2651097,2651097,2651098,
+Cath-alina,R3,27,134100000,23600000,7674530,15600,123521,,,8h,2005335,1889731,1889731,1889733,
+BanikJnr,R3,27,87600000,27900000,9852441,32280,338918,,,8h,3936422,1972006,1972006,1972007,
+SkullDevil,R3,27,132600000,29300000,22528092,13320,601849,,,9h,3094831,6477753,6477753,6477755,
+moon 20,R3,28,112800000,24900000,7680530,16920,283519,,,11h,6017466,554354,554354,554356,
+Silent BoB,R3,27,158800000,37200000,0,0,445817,,,Inactive 4d,0,0,0,0,
+Laong Laan,R2,27,145600000,29000000,15810388,57780,298334,,,Online,3629402,4060328,4060328,4060330,
+Mr SRiNU,R2,27,127200000,23800000,13895395,34440,160428,,,Online,4216621,3226258,3226258,3226258,
+Flashaso,R2,27,111400000,15900000,13815972,41320,99101,,,Online,8596782,1739730,1739730,1739730,
+YUDISTIRAWIJAYA,R2,28,126600000,14900000,15935724,46080,352233,,,4m,8722836,2404296,2404296,2404296,
+aauroraa,R2,27,105300000,13400000,10046657,23280,67031,,,6m,2235855,2603600,2603600,2603602,
+Jeal,R2,27,131900000,31300000,13303142,43320,111470,,,24m,3908182,3131653,3131653,3131654,
+Aqua Trident,R2,27,93500000,14200000,8731615,46920,78521,,,31m,2680751,2016954,2016954,2016956,
+rafouss,R2,26,111500000,15800000,12448894,46800,101323,,,38m,3031057,3139279,3139279,3139279,
+Mangata,R2,27,108800000,23100000,14241325,39840,305846,,,52m,5298722,2980867,2980867,2980869,
+Lycanh,R2,27,118000000,19700000,15885529,46360,399606,,,1h,3944518,3980337,3980337,3980337,
+DevilIL,R2,26,101700000,21400000,17476207,27220,225796,,,1h,6550050,3642052,3642052,3642053,
+shiva120,R2,27,106700000,19500000,11259086,38940,262823,,,1h,3744012,2505024,2505024,2505026,
+TRUEC,R2,26,100900000,18100000,12384817,43080,96542,,,3h,3063822,3106998,3106998,3106999,
+Yurintines,R2,27,114200000,19900000,15562705,37440,110248,,,4h,4336317,3742129,3742129,3742130,
+salvador FC,R2,27,116000000,20300000,7003023,19080,366200,,,5h,1882281,1706914,1706914,1706914,
+LATAN,R2,27,125400000,18000000,5535125,43200,74124,,,5h,2687600,949175,949175,949175,
+GODOFWAR18,R2,26,118700000,15900000,6768541,38040,109554,,,5h,3928309,946744,946744,946744,
+Cepi91,R2,26,91700000,14000000,13137380,37920,72291,,,5h,2514885,3540831,3540831,3540833,
+vickey07,R2,27,113700000,13100000,5479021,18240,182440,,,6h,3279957,733021,733021,733022,
+DeniM,R2,27,109200000,16500000,11017376,30340,98658,,,6h,1911641,3035245,3035245,3035245,
+saya20,R2,26,118100000,11200000,6918327,32400,51519,,,6h,2976128,1314066,1314066,1314067,
+Emma-nuela,R2,27,119900000,13900000,14798670,44740,19370,,,7h,4570367,3409434,3409434,3409435,
+Anisa bangor,R2,26,107800000,11800000,10913166,24840,93439,,,8h,3441748,2490472,2490472,2490474,
+PANAGIOTHS 1,R2,27,121400000,16000000,5521706,33000,114526,,,13h,3793417,576096,576096,576097,
+Macarr Farm,R1,27,118100000,22000000,3722947,19800,481596,,,1m,1508029,738306,738306,738306,
+Femor,R1,27,130400000,26500000,8415966,41040,189984,,,21m,3584835,1610377,1610377,1610377,
+JJORGE,R1,27,131500000,31700000,14484602,44640,140537,,,1h,5006405,3159399,3159399,3159399,
+Burgerakos,R1,27,137200000,31100000,14048532,48600,285968,,,1h,3616566,3477322,3477322,3477322,
+Mr oxygen,R1,27,121900000,32400000,7126873,51480,255785,,,2h,2728143,1466243,1466243,1466244,
+Knight-Rod,R1,27,123600000,20100000,13528986,49680,204489,,,2h,4884465,2881507,2881507,2881507,
+Pilgrim,R1,27,145400000,42000000,20594814,45480,148340,,,3h,4969197,5208539,5208539,5208539,
+カタリス,R1,27,109600000,14600000,11538966,41640,152185,,,5h,3536252,2667571,2667571,2667572,
+Andrea 71,R1,26,102800000,17200000,6590383,19200,116755,,,5h,3318514,1090623,1090623,1090623,
+BLACK WIDDOW,R1,27,115900000,25000000,5522566,25680,530638,,,5h,2265823,1085581,1085581,1085581,
+DrCrosz,R1,27,133900000,21400000,6075060,44480,185278,,,6h,744294,1776922,1776922,1776922,
+RoN3roZero87,R1,27,144100000,24500000,7999075,36720,306312,,,7h,1601811,2132421,2132421,2132422,
+Sinfra,R1,27,135400000,23600000,14120954,46680,177329,,,7h,4952322,3056210,3056210,3056212,
+NADAELSA,R1,28,145700000,27200000,12578146,40800,403035,,,9h,2339784,3412787,3412787,3412788,
+GKAR,R1,27,126000000,44700000,9781525,34080,688514,,,11h,3813606,1989306,1989306,1989307,
+Sava81,R1,26,94800000,18400000,6570377,26500,25688,,,23h,3380429,1063316,1063316,1063316,
+JAXH THE SLAYER,R1,26,100600000,13300000,1520379,3480,93946,,,Inactive 3d,1520379,0,0,0,
+Doler G,R1,27,97000000,45500000,0,0,753980,,,Inactive 11d,0,0,0,0,`;
+const LOCAL_PREV_CSV = `Jugador,Rango,HQ,Poder,ArenaPower,VS,Donacion,Kills,Nuevo,FechaDatos,LastSeen
+LAKIDIO,R5,30,261100000,164500000,26791478,24840,3898361,,2026-09-29,
+Macarr,R4,29,129500000,56300000,12917503,10920,1322818,,,
+KillaFish,R4,28,160400000,54300000,5390092,26760,1064726,,,
+iKoren,R4,29,154700000,43900000,10591358,22680,1157560,,,
+IRON ROSE,R4,29,149100000,45900000,10125902,30960,815743,,,
+Kyotö,R4,29,109100000,41300000,11616965,22920,690341,,,
+Vaelis,R4,30,191600000,95900000,9231366,27840,3907900,,,
+Anatselo7,R4,30,169800000,66200000,18628779,28920,2295831,,,
+Marce,R4,29,164300000,59300000,11337172,26880,945197,,,
+Spidergas,R3,28,159500000,39800000,10796659,27480,589548,,,
+FinnWolf,R3,27,149500000,26200000,5012157,31560,148117,,,
+Baby drvu,R3,27,134200000,44800000,5517733,24000,415428,,,
+Moonglade,R3,27,128300000,47200000,9035104,29400,1102793,,,
+Kuaris,R3,27,121500000,25500000,5772613,27120,129036,,,
+PickledNinja,R3,27,119400000,23700000,10302436,20520,99894,,,
+One Moree,R3,28,118400000,37400000,3188595,11760,687496,,,
+kPetro,R3,29,118200000,54400000,13561639,25680,1264056,,,
+Bruno akd,R3,29,115500000,23700000,4694450,26420,1045949,,,
+RIKASI,R3,27,114200000,28000000,1138890,15720,423558,,,
+КЕЙ,R3,28,113700000,32900000,3945561,19560,594669,,,
+Abed joma120,R3,28,92700000,30400000,8253463,26880,359464,,,
+STVX,R3,30,152700000,54200000,8780121,27120,2431565,,,
+Hey Daddy,R3,28,127700000,38700000,5780482,15240,388397,,,
+YaiYai8989,R3,27,124200000,33000000,7350670,26380,472966,,,
+akiles,R3,27,101800000,25200000,4389960,24800,534672,,,
+• Mythos •,R3,30,209200000,81000000,19354118,27280,3214922,,,
+SR 873,R3,27,111100000,32200000,3849619,27720,668847,,,
+esthersilveira,R3,27,124800000,18500000,5322012,20040,19683,,,
+IngeFher v2,R3,27,122300000,27100000,4917532,16680,446339,,,
+○ • ○,R3,27,111000000,23500000,8150217,26640,336124,,,
+Slamet 5,R3,27,105300000,26100000,11662732,22360,77993,,,
+kbs gamesyt,R3,27,120600000,37900000,3490234,19200,109792,,,
+Texastacofien,R3,27,155400000,29200000,5736060,22440,47860,,,
+BanikJnr,R3,27,84200000,27700000,5950730,24360,338918,,,
+тошко,R3,27,139700000,24100000,3678929,25920,107233,,,
+hoodmell2,R3,28,144100000,50900000,3936693,19440,103823,,,
+SIMA-LOVE,R3,27,140900000,32700000,5403176,20200,259711,,,
+Killabilla,R3,28,147800000,52800000,6156909,26280,418385,,,
+Fênix1,R3,28,143100000,50700000,10630817,22440,561539,,,
+ikistøker,R3,29,174200000,48500000,13831137,15000,1145489,,,
+David 0001,R3,27,127300000,24500000,7678773,24720,306095,,,
+moon 20,R3,28,111000000,24900000,6017466,9480,283519,,,
+BIHAR,R3,28,118500000,29300000,9420560,16440,954492,,,
+KluczyK,R3,28,149500000,34900000,5715114,22920,368770,,,
+ηατsυ,R3,27,116300000,28400000,5749582,16800,445899,,,
+卡拉賓,R3,28,118400000,33100000,2521258,20400,225040,,,
+Araashi,R3,27,117300000,23300000,3603812,24360,230570,,,
+RaenyDaze,R3,28,115100000,31900000,6995717,15240,17267,,,
+Gethuk Lindri,R3,27,109100000,24500000,2618924,18000,152097,,,
+Onde-onde,R3,28,133600000,36700000,22849532,15600,538674,,,
+STVXDANICAFARM,R3,27,146600000,25800000,8856179,22440,175315,,,
+Tertullian,R3,27,162200000,44700000,6864925,18720,430755,,,
+Yu-Jinn,R3,27,102900000,36700000,5902736,15000,642897,,,
+Aya57,R3,29,153900000,44500000,7498859,8520,468209,,,
+Cath-alina,R3,27,126400000,23500000,2005335,0,123521,,,14h
+SkullDevil,R3,27,130100000,29300000,3094831,4320,601806,,,22h
+Silent BoB,R3,27,158900000,37200000,0,0,445817,,,2d
+Emma-nuela,R2,27,119100000,13100000,6320064,21480,19370,,,
+GODOFWAR18,R2,26,118000000,15800000,5685918,21000,107943,,,
+Mangata,R2,27,101100000,22400000,6938515,22920,305431,,,
+Aqua Trident,R2,27,90400000,14300000,4208809,22560,78397,,,
+Laong Laan,R2,27,142300000,32100000,6061771,37080,298334,,,
+PANAGIOTHS 1,R2,27,121000000,16000000,4893502,21360,114526,,,
+vickey07,R2,27,113600000,13100000,4433758,9720,182440,,,
+Flashaso,R2,27,109000000,15900000,10024563,18260,99101,,,
+Yurintines,R2,27,113000000,17800000,6380089,20640,110248,,,
+rafouss,R2,26,110400000,15700000,5385044,24480,101323,,,
+TRUEC,R2,26,99800000,16300000,4969187,21840,96542,,,
+Jeal,R2,27,130000000,31300000,7279923,25200,111470,,,
+Mr SRiNU,R2,27,123900000,23600000,6598454,20160,160428,,,
+salvador FC,R2,27,110500000,20100000,2801397,9720,366200,,,
+YUDISTIRAWIJAYA,R2,28,119000000,14400000,10937865,22680,351662,,,
+DeniM,R2,27,102800000,14000000,2879137,15520,98658,,,
+saya20,R2,26,117800000,11100000,4376159,15240,51267,,,
+Lycanh,R2,27,111800000,19700000,5391051,14680,399606,,,
+Anisa bangor,R2,26,107400000,11800000,5276456,12000,93439,,,
+shiva120,R2,27,81900000,19500000,5824612,15960,262797,,,
+LATAN,R2,27,124500000,15400000,3301657,21720,74124,,,
+DevilIL,R2,26,102800000,20000000,8329981,14500,225582,,,
+aauroraa,R2,27,104500000,12700000,4360739,9360,67031,,,
+Cepi91,R2,26,85000000,12900000,3802565,18000,72291,,,
+RoN3roZero87,R1,27,143500000,24500000,3025593,17400,306312,,,
+Pilgrim,R1,27,142900000,39600000,7853508,22440,148340,,,
+Femor,R1,27,125100000,26400000,5509473,23760,189984,,,
+Burgerakos,R1,27,136100000,29700000,6793327,25080,285968,,,
+GKAR,R1,27,124600000,44700000,4670305,14400,688514,,,
+Mr oxygen,R1,27,117500000,32200000,5132617,28920,255785,,,
+Sinfra,R1,27,134200000,23100000,8168756,25680,177329,,,
+Knight-Rod,R1,27,121400000,19100000,6284339,23160,204489,,,
+NADAELSA,R1,28,143700000,27100000,4908887,22440,402723,,,
+カタリス,R1,27,109400000,14300000,6590644,23760,152185,,,
+DrCrosz,R1,27,132900000,21300000,2827626,20280,185278,,,
+BLACK WIDDOW,R1,27,115800000,25000000,3832995,11280,530638,,,
+JJORGE,R1,27,119200000,31400000,6435482,20280,140537,,,
+Macarr Farm,R1,27,104800000,22000000,2739421,6720,480977,,,
+Sava81,R1,26,91300000,18300000,4399733,12840,25688,,,
+Andrea 71,R1,26,99000000,17200000,4044565,6720,116497,,,
+JAXH THE SLAYER,R1,26,100700000,13300000,1520379,3480,93946,,,
+Doler G,R1,27,97000000,45500000,0,0,753980,,,Inactive 9d`;  // previous capture, used for Week vs Week when no sheet tab is loaded
+let EST=new Set();  // day indexes that are prorated estimates
+
+/* ============================ UTIL ============================ */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtM = v => v == null || isNaN(v) ? '—' : (Math.abs(v) >= 1e6 ? (v/1e6).toFixed(1)+'M' : Math.abs(v) >= 1e3 ? (v/1e3).toFixed(0)+'K' : String(Math.round(v)));
+const sgn = v => v == null ? '—' : (v > 0 ? '+' : '') + fmtM(v);
+const median = a => { const b = a.filter(x => x != null && !isNaN(x)).sort((x,y)=>x-y); if(!b.length) return null; const m=b.length>>1; return b.length%2?b[m]:(b[m-1]+b[m])/2; };
+function toast(t){ const e=$('#toast'); e.textContent=t; e.classList.add('on'); setTimeout(()=>e.classList.remove('on'),1800); }
+function store(k,v){ try{ v===undefined ? localStorage.removeItem(k) : localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+function load(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
+
+function parseCSV(text){
+  text = String(text||'').replace(/^﻿/,'');
+  const rows=[]; let row=[], f='', q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){ if(c=='"'){ if(text[i+1]=='"'){f+='"';i++;} else q=false; } else f+=c; }
+    else if(c=='"') q=true;
+    else if(c==','){ row.push(f); f=''; }
+    else if(c=='\n'||c=='\r'){ if(c=='\r'&&text[i+1]=='\n') i++; row.push(f); rows.push(row); row=[]; f=''; }
+    else f+=c;
+  }
+  if(f!==''||row.length){ row.push(f); rows.push(row); }
+  const clean = rows.filter(r => r.some(x => String(x).trim()!==''));
+  if(!clean.length) return [];
+  const hdr = clean[0].map(h => String(h).trim());
+  return clean.slice(1).map(r => Object.fromEntries(hdr.map((h,i)=>[h, (r[i]??'').trim()])));
+}
+
+const KEYS = {
+  name:['Player','Jugador','Name','Nombre'], rank:['Rank','Rango'], hq:['HQ'],
+  power:['Power','Poder','PersonalPower'], arena:['ArenaPower','Arena'], vs:['VS'],
+  don:['Donation','Donacion','Donación'], kills:['Kills'], isNew:['New','Nuevo'],
+  date:['DataDate','FechaDatos'], seen:['LastSeen','UltimaVez','Seen'],
+  week:['Week','Semana'], canon:['Canonical','Canonico','Canónico','Main'], alltime:['AllTimeVS'],
+  canyonA:['CanyonAttend','CanyonAsistencia','AsistenciaCanyon','Canyon'], canyonS:['CanyonScore','CanyonPuntos','PuntosCanyon']
+};
+const DAY_KEYS = [['VS_Mon','VS_Lun'],['VS_Tue','VS_Mar'],['VS_Wed','VS_Mie','VS_Mié'],['VS_Thu','VS_Jue'],['VS_Fri','VS_Vie'],['VS_Sat','VS_Sab','VS_Sáb']];
+function pick(o, keys){ for(const k of keys){ const hit=Object.keys(o).find(x=>x.toLowerCase()===k.toLowerCase()); if(hit!==undefined && o[hit]!=='') return o[hit]; } return ''; }
+function num(v){ if(v===''||v==null) return null; const t=String(v).replace(/[, ]/g,'').trim(); if(/^-?\d+(\.\d+)?[mM]$/.test(t)) return parseFloat(t)*1e6; if(/^-?\d+(\.\d+)?[kK]$/.test(t)) return parseFloat(t)*1e3; const n=Number(t); return isNaN(n)?null:n; }
+function seenHours(v){
+  const t=String(v||'').toLowerCase().trim(); if(!t) return null;
+  if(t.includes('online')) return 0;
+  const m=t.match(/(\d+(?:\.\d+)?)\s*(m|min|h|d)/); if(!m) return null;
+  const n=parseFloat(m[1]); return m[2].startsWith('m')? n/60 : m[2]=='h'? n : n*24;
+}
+function fmtSeen(h){ if(h==null) return '—'; if(h===0) return 'Online'; if(h<1) return Math.round(h*60)+'m'; if(h<24) return Math.round(h)+'h'; return Math.round(h/24)+'d'; }
+
+/* ============================ DATA ============================ */
+let ALIAS = {}; // lower-case name -> canonical
+const canon = n => { const k=String(n||'').trim(); return ALIAS[k.toLowerCase()] || k; };
+
+function normalize(rows){
+  return rows.map(r=>{
+    const name = pick(r,KEYS.name); if(!name) return null;
+    return {
+      raw:name, name:canon(name), rank:pick(r,KEYS.rank).toUpperCase(), hq:num(pick(r,KEYS.hq)),
+      power:num(pick(r,KEYS.power)), arena:num(pick(r,KEYS.arena)), vs:num(pick(r,KEYS.vs)),
+      don:num(pick(r,KEYS.don)), kills:num(pick(r,KEYS.kills)),
+      isNew:/^(1|y|yes|si|sí|true|x)$/i.test(pick(r,KEYS.isNew)),
+      date:pick(r,KEYS.date), seen:seenHours(pick(r,KEYS.seen)),
+      days:DAY_KEYS.map(ks=>num(pick(r,ks))), alltimeCol:num(pick(r,KEYS.alltime)),
+      canyonA:(v=>v===''?null:/^(1|y|yes|si|sí|x|true|✓)$/i.test(v))(pick(r,KEYS.canyonA)), canyonS:num(pick(r,KEYS.canyonS))
+    };
+  }).filter(Boolean);
+}
+
+function parseDate(s){
+  s=String(s||'').trim(); if(!s) return null;
+  let m=s.match(/^(\d{4})[-.\/](\d{1,2})[-.\/](\d{1,2})/); if(m) return new Date(+m[1],m[2]-1,+m[3],12);
+  m=s.match(/^(\d{1,2})[-.\/](\d{1,2})[-.\/](\d{4})/); if(m) return new Date(+m[3],m[2]-1,+m[1],12);
+  const d=new Date(s); return isNaN(d)?null:d;
+}
+
+function srcURL(v){
+  v=String(v||'').trim(); if(!v) return null;
+  if(/^https?:\/\//.test(v)) return v;
+  if(!CFG.id) return null;
+  return `https://docs.google.com/spreadsheets/d/${CFG.id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(v)}`;
+}
+async function fetchCSV(v){
+  const u=srcURL(v); if(!u) return null;
+  const r=await fetch(u,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status);
+  const t=await r.text(); if(/<html/i.test(t.slice(0,200))) throw new Error('not a CSV (check sharing)');
+  return parseCSV(t);
+}
+
+let CFG = Object.assign({}, DEFAULTS, load('amps_cfg')||{});
+const MANUAL = {};
+let CUR=[], PREV=null, HIST=null, SOURCE='', DATA_DATE=null, DAY=VS_DAYS, FINAL=true;
+
+async function loadAll(){
+  const notes=[]; let cls='ok';
+  // alias first
+  ALIAS={};
+  try{
+    const a = MANUAL.alias || await fetchCSV(CFG.alias);
+    (a||[]).forEach(r=>{ const n=pick(r,KEYS.name), c=pick(r,KEYS.canon); if(n&&c) ALIAS[n.toLowerCase()]=c; });
+    if(a) notes.push(Object.keys(ALIAS).length+' aliases');
+  }catch(e){}
+  // current
+  let rows=null;
+  try{ rows = MANUAL.live || await fetchCSV(CFG.live); if(rows&&rows.length) SOURCE = MANUAL.live?'Manual CSV':'Live Google Sheet'; }
+  catch(e){ notes.push('live sheet failed: '+e.message); cls='warn'; }
+  if(!rows||!rows.length){ rows=parseCSV(LOCAL_CSV); SOURCE='Embedded capture'; if(cls==='ok') cls='warn'; }
+  CUR = normalize(rows);
+  // estimated (prorated) daily VS, e.g. DailyEstimated = "Tue-Thu"
+  EST=new Set(); { const r0=rows.find(r=>pick(r,['DailyEstimated'])); const m=r0&&pick(r0,['DailyEstimated']).match(/(Mon|Tue|Wed|Thu|Fri|Sat)\s*-\s*(Mon|Tue|Wed|Thu|Fri|Sat)/i);
+    const D=['mon','tue','wed','thu','fri','sat']; if(m){ for(let i=D.indexOf(m[1].toLowerCase());i<=D.indexOf(m[2].toLowerCase());i++) EST.add(i); } }
+  // previous
+  PREV=null;
+  try{ const p = MANUAL.prev || await fetchCSV(CFG.prev); if(p&&p.length) PREV=normalize(p); }catch(e){ notes.push('previous failed: '+e.message); }
+  if(!PREV && LOCAL_PREV_CSV.indexOf('__PREV__')<0){ const lp=normalize(parseCSV(LOCAL_PREV_CSV)); const d1=(lp.find(x=>x.date)||{}).date, d2=(CUR.find(x=>x.date)||{}).date; if(d1&&d2&&d1<d2){ PREV=lp; notes.push('previous: embedded '+d1); } }
+  // history
+  HIST=null;
+  try{ const h = MANUAL.hist || await fetchCSV(CFG.hist); if(h&&h.length) HIST=h; }catch(e){}
+  // date / pace
+  DATA_DATE = parseDate((CUR.find(p=>p.date)||{}).date);
+  const wd = DATA_DATE ? DATA_DATE.getDay() : 6;
+  DAY = (wd===0||wd===6) ? VS_DAYS : wd;  // Sun & Sat = week closed
+  FINAL = DAY===VS_DAYS;
+  $('#src').className='src '+cls;
+  $('#src').textContent = `Source: ${SOURCE} · ${CUR.length} players` + (PREV?` · previous: ${PREV.length}`:'') + (notes.length?' · '+notes.join(' · '):'');
+  renderAll();
+}
+
+/* ============================ METRICS ============================ */
+const target = () => DAILY_MIN * DAY;
+const active = () => CUR.filter(p=>!p.isNew);
+const pacePct = p => p.vs==null ? null : p.vs/target()*100;
+function allTime(p){
+  if(p.alltimeCol!=null) return p.alltimeCol;
+  if(!HIST) return null;
+  const weeks={};
+  HIST.forEach(r=>{ if(canon(pick(r,KEYS.name))!==p.name) return; const w=pick(r,KEYS.week)||'?'; const v=num(pick(r,KEYS.vs))||0; weeks[w]=Math.max(weeks[w]||0,v); });
+  const cw = DATA_DATE ? isoWeek(DATA_DATE) : null;
+  let s=Object.entries(weeks).filter(([w])=>w!==cw).reduce((a,[,v])=>a+v,0);
+  return s + (p.vs||0);
+}
+function isoWeek(d){ const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); const n=t.getUTCDay()||7; t.setUTCDate(t.getUTCDate()+4-n); const y=new Date(Date.UTC(t.getUTCFullYear(),0,1)); return t.getUTCFullYear()+'-W'+String(Math.ceil(((t-y)/864e5+1)/7)).padStart(2,'0'); }
+const DAYNAMES=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+/* ============================ RENDER ============================ */
+function renderAll(){
+  const dstr = DATA_DATE ? DATA_DATE.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric',year:'numeric'}) : 'date unknown';
+  $('#stamp').textContent = `Data captured ${dstr} · ` + (FINAL ? 'Week closed — full minimum' : `Mid-week · day ${DAY}/${VS_DAYS} · pace ${fmtM(target())}`);
+  document.querySelectorAll('.dmin').forEach(e=>e.textContent=fmtM(DAILY_MIN));
+  const today=new Date(); today.setHours(12,0,0,0);
+  const age = DATA_DATE ? Math.round((today-DATA_DATE)/864e5) : null;
+  const st=$('#stale');
+  if(age>=1){ st.style.display=''; st.innerHTML=`⚠️ <b>Data is ${age} day${age>1?'s':''} old</b> — last capture ${dstr}. "Seen" times and VS pace are as of that capture, not today.`; } else st.style.display='none';
+  renderSummary(); renderWeek(); renderDelta(); renderDaily(); renderCanyon(); renderActivity(); renderRanks(); renderCharts(); renderProfile(); fillCfg();
+}
+
+function below(){ return active().filter(p=>(p.vs||0)<target()).sort((a,b)=>(a.vs||0)-(b.vs||0)); }
+function inactive(){ return CUR.filter(p=>p.seen!=null&&p.seen>=INACTIVE_H); }
+
+function renderSummary(){
+  const act=active(), bl=below(), ok=act.length-bl.length, tot=CUR.reduce((a,p)=>a+(p.vs||0),0);
+  const donMed=median(CUR.map(p=>p.don));
+  $('#kpis').innerHTML = [
+    [ok+' / '+act.length, FINAL?'met the minimum':'on pace'],
+    [fmtM(tot),'alliance VS'],
+    [fmtM(median(CUR.map(p=>p.vs))),'median VS'],
+    [fmtM(donMed),'median donation']
+  ].map(([b,s])=>`<div class="kpi"><b>${b}</b><span>${s}</span></div>`).join('');
+  const pct = act.length? ok/act.length*100 : 0;
+  const zero = bl.filter(p=>!p.vs);
+  const ina = inactive();
+  const hl = [...CUR].filter(p=>!['R4','R5'].includes(p.rank)).sort((a,b)=>(b.vs||0)-(a.vs||0))[0];
+  const hlPos = hl ? [...CUR].sort((a,b)=>(b.vs||0)-(a.vs||0)).indexOf(hl)+1 : 0;
+  let lines = [];
+  const wd=DATA_DATE?DATA_DATE.getDay():1;
+  const focus = wd===5 ? '🏜️ <b>Friday</b> — Canyon attendance & score; power should be at its peak.' : (wd===6||wd===0) ? '⚔️ <b>Saturday</b> — war day: kills decide.' : '📈 <b>Weekday</b> — VS every day + grow power steadily toward Friday.';
+  lines.push(`<div class="line"><span class="ic">🗓️</span><div>${focus}</div></div>`);
+  lines.push(`<div class="line"><span class="ic">🛡️</span><div><b>${ok} / ${act.length}</b> ${FINAL?'met the weekly minimum':'are on pace'} (≥ ${fmtM(target())})<div class="bar"><i style="width:${pct.toFixed(1)}%"></i></div></div></div>`);
+  lines.push(`<div class="line"><span class="ic">⚠️</span><div style="flex:1"><b>${bl.length} below ${FINAL?'minimum':'pace'}</b>${bl.length?'':' — everyone is on track 💪'}${bl.length?`<div class="blist">${bl.map((p,i)=>{ const pc=Math.min(100,(p.vs||0)/target()*100); const c=pc>=60?'var(--amber)':'var(--red2)'; return `<div class="bl"><span class="n">${i+1}</span><span class="who">${esc(p.name)} <span class="pill m">${p.rank||'—'}</span></span><span class="v">${fmtM(p.vs)}</span><span class="meter"><i style="width:${pc.toFixed(0)}%;background:${c}"></i></span><span class="need">${Math.round(pc)}% · needs ${fmtM(target()-(p.vs||0))} more${p.seen!=null?' · seen '+fmtSeen(p.seen)+' ago':''}</span></div>`; }).join('')}</div>`:''}</div></div>`);
+  if(ina.length) lines.push(`<div class="line"><span class="ic">💤</span><div><b>Inactive</b>: ${ina.map(p=>`${esc(p.name)} (${fmtSeen(p.seen)})`).join(' · ')}</div></div>`);
+  else if(zero.length) lines.push(`<div class="line"><span class="ic">💤</span><div><b>Zero VS</b>: ${zero.map(p=>esc(p.name)).join(' · ')}</div></div>`);
+  if(hl) lines.push(`<div class="line"><span class="ic">⭐</span><div><b>Spotlight</b>: ${esc(hl.name)} (${hl.rank||'—'}) with ${fmtM(hl.vs)} — #${hlPos} in the alliance.</div></div>`);
+  if(PREV){ const d=deltas().filter(x=>x.status==='FROZEN'); if(d.length) lines.push(`<div class="line"><span class="ic">🧊</span><div><b>Frozen since last capture (no VS, power, arena or kills)</b>: ${d.map(x=>esc(x.p.name)).join(' · ')}</div></div>`); }
+  $('#summaryLines').innerHTML = lines.join('');
+}
+
+let sortKey='vs', sortDir=-1;
+function renderWeek(){
+  const q=($('#q').value||'').toLowerCase();
+  const cols=[
+    ['name','Player',p=>esc(p.name)+(p.isNew?' <span class="pill n">NEW</span>':''),0],
+    ['rank','Rank',p=>p.rank||'—',0],['hq','HQ',p=>p.hq??'—',1],
+    ['arena','Arena',p=>fmtM(p.arena),1],['power','Power',p=>fmtM(p.power),1],
+    ['vs','VS',p=>fmtM(p.vs),1],
+    ['pace',FINAL?'% Min':'Pace',p=>{const v=pacePct(p); if(v==null) return '—'; const c=v>=100?'g':v>=60?'y':'x'; return `<span class="pill ${c}">${Math.round(v)}%</span>`;},1],
+    ['don','Donation',p=>fmtM(p.don),1],['kills','Kills',p=>fmtM(p.kills),1],
+    ['seen','Seen',p=>fmtSeen(p.seen),1]
+  ];
+  const hasAT = CUR.some(p=>allTime(p)!=null);
+  if(hasAT) cols.push(['alltime','All-Time VS',p=>fmtM(allTime(p)),1]);
+  const val=(p,k)=>k==='pace'?pacePct(p):k==='alltime'?allTime(p):p[k];
+  const rows=CUR.filter(p=>!q||p.name.toLowerCase().includes(q)||p.raw.toLowerCase().includes(q))
+    .sort((a,b)=>{ const x=val(a,sortKey),y=val(b,sortKey); if(typeof x==='string'||typeof y==='string') return sortDir*String(x||'').localeCompare(String(y||'')); return sortDir*((x??-Infinity)-(y??-Infinity)); });
+  $('#weekTable').innerHTML = `<tr><th>#</th>${cols.map(([k,l,,r])=>`<th class="${r?'r ':''}${k===sortKey?'sorted':''}" onclick="sortBy('${k}')">${l}${k===sortKey?(sortDir<0?' ▼':' ▲'):''}</th>`).join('')}</tr>` +
+    rows.map((p,i)=>`<tr><td>${i+1}</td>${cols.map(([,, f,r])=>`<td class="${r?'r':''}">${f(p)}</td>`).join('')}</tr>`).join('');
+}
+function sortBy(k){ if(sortKey===k) sortDir*=-1; else { sortKey=k; sortDir=(k==='name'||k==='rank')?1:-1; } renderWeek(); }
+
+/* Weekly rhythm of [HALO]:
+   Mon–Fri  → VS is what matters + power grows gradually toward Friday
+   Friday   → Canyon attendance + score
+   Saturday → war day: kills decide */
+/* Combat profile — same zones as the Combat Quadrant (Arena vs lifetime kills, alliance medians) */
+function combatProfile(p){
+  if(p.arena==null||p.kills==null) return null;
+  const mA=median(CUR.map(x=>x.arena)), mK=median(CUR.map(x=>x.kills));
+  return p.arena>=mA ? (p.kills>=mK?'WARRIOR':'FARM') : (p.kills>=mK?'FIGHTER':'GROWING');
+}
+const PROF_CLS={WARRIOR:'g',FIGHTER:'n',FARM:'y',GROWING:'m'};
+let profFilter=null;
+const isWarDay = () => DATA_DATE ? [6,0].includes(DATA_DATE.getDay()) : false;
+function deltas(){
+  if(!PREV) return [];
+  const pm=Object.fromEntries(PREV.map(p=>[p.name,p]));
+  const out=CUR.map(p=>{
+    const o=pm[p.name]; if(!o) return {p,status:'NEW'};
+    const dk=(p.kills!=null&&o.kills!=null)?p.kills-o.kills:null;
+    const da=(p.arena!=null&&o.arena!=null)?p.arena-o.arena:null;
+    const dp=(p.power!=null&&o.power!=null)?p.power-o.power:null;
+    return {p,dk,da,dp,prevVS:o.vs};
+  });
+  const war=isWarDay();
+  const medK=median(out.filter(x=>x.dk!=null&&x.dk>0).map(x=>x.dk))||0;
+  out.forEach(x=>{
+    if(x.status) return;
+    const grew=(x.dp??0)>0||(x.da??0)>0;
+    if(!grew && (x.dk??0)<=0 && !(x.p.vs>0 && x.p.vs>(x.prevVS||0))) { x.status='FROZEN'; return; }
+    if(war){
+      if((x.dk??0)>=medK && medK>0) x.status='WAR';
+      else if((x.dk??0)>=medK*0.25) x.status='FOUGHT';
+      else x.status='NO FIGHT';
+    } else {
+      const onPace=(x.p.vs||0)>=target();
+      x.status = onPace ? (grew?'STRONG':'ON PACE') : (grew?'GROWING':'STALLED');
+    }
+  });
+  const cur=new Set(CUR.map(p=>p.name));
+  PREV.filter(o=>!cur.has(o.name)).forEach(o=>out.push({p:o,status:'LEFT'}));
+  return out;
+}
+const STATUS_CLS={STRONG:'g','ON PACE':'g',GROWING:'y',STALLED:'x',WAR:'g',FOUGHT:'g','NO FIGHT':'y',FROZEN:'x',NEW:'n',LEFT:'m'};
+function renderDelta(){
+  if(!PREV){ $('#deltaBox').innerHTML=`<div class="empty">No previous capture loaded yet.<br>Add the previous tab name in <b>Setup</b> — this view fills in automatically.</div>`; return; }
+  const war=isWarDay();
+  const d=deltas().sort(war?((a,b)=>(b.dk??-1e15)-(a.dk??-1e15)):((a,b)=>(b.dp??-1e15)-(a.dp??-1e15)));
+  const order = war ? ['WAR','FOUGHT','NO FIGHT','FROZEN','NEW','LEFT'] : ['STRONG','ON PACE','GROWING','STALLED','FROZEN','NEW','LEFT'];
+  const count=s=>d.filter(x=>x.status===s).length;
+  const totP=d.reduce((a,x)=>a+(x.dp>0?x.dp:0),0);
+  const pc=s=>CUR.filter(p=>combatProfile(p)===s).length;
+  const rows=profFilter?d.filter(x=>combatProfile(x.p)===profFilter):d;
+  $('#deltaBox').innerHTML = `<div class="sec">COMBAT PROFILE (tap to filter)</div><div class="mchips">${['WARRIOR','FIGHTER','FARM','GROWING'].map(s=>`<button class="mchip ${profFilter===s?'on':''}" onclick="profFilter=profFilter==='${s}'?null:'${s}';renderDelta()"><span class="pill ${PROF_CLS[s]}">${s}</span> ${pc(s)}</button>`).join('')}</div>
+  <p class="how">WARRIOR = big Arena + many kills · FIGHTER = smaller Arena but many kills · FARM = big Arena, few kills · GROWING = small Arena, few kills. Based on lifetime kills vs alliance medians.</p>
+  <div class="sec">${war?'WAR DAY':'THIS WEEK'}</div><div class="chips" style="margin-bottom:8px">${order.map(s=>`<span class="chip"><span class="pill ${STATUS_CLS[s]}">${s}</span> ${count(s)}</span>`).join('')}</div>
+  <p class="how">${war
+    ? '⚔️ <b>War day</b> — kills decide. WAR = kills gained ≥ alliance median · FOUGHT = 25%+ of the median · NO FIGHT = less.'
+    : `📈 <b>Weekday mode</b> — VS + power growth toward Friday. Kills are only judged on Saturday.<br>STRONG = on VS pace and power/arena grew · ON PACE = on pace, no growth · GROWING = grew but behind on VS · STALLED = behind and no growth. Alliance power gained: <b>${fmtM(totP)}</b>.`}
+    FROZEN = nothing moved.</p>
+  <div class="tablewrap"><table><tr><th>Player</th><th class="r">+Power</th><th class="r">+Arena</th><th class="r">${war?'+Kills':'VS pace'}</th><th class="r">${war?'Prev VS':'+Kills'}</th><th class="r">Profile</th><th class="r">Status</th></tr>
+  ${rows.map(x=>{ const cp=combatProfile(x.p); const pp=pacePct(x.p); const paceTd=pp==null?'—':`<span class="pill ${pp>=100?'g':pp>=60?'y':'x'}">${Math.round(pp)}%</span>`;
+    return `<tr><td>${esc(x.p.name)}</td><td class="r ${x.dp>0?'up':x.dp<0?'dn':''}">${sgn(x.dp)}</td><td class="r ${x.da>0?'up':x.da<0?'dn':''}">${sgn(x.da)}</td>
+    <td class="r ${war&&x.dk>0?'up':''}">${war?sgn(x.dk):paceTd}</td><td class="r">${war?fmtM(x.prevVS):sgn(x.dk)}</td><td class="r">${cp?`<span class="pill ${PROF_CLS[cp]}">${cp}</span>`:'—'}</td><td class="r"><span class="pill ${STATUS_CLS[x.status]}">${x.status}</span></td></tr>`; }).join('')}
+  </table></div>`;
+}
+
+function renderCanyon(){
+  const has=CUR.some(p=>p.canyonA!=null||p.canyonS!=null);
+  if(!has){ $('#canyonBox').innerHTML=`<div class="empty">No Canyon data in this capture.<br>Friday's capture adds <b>CanyonAttend</b> (x = attended) and <b>CanyonScore</b>.</div>`; return; }
+  const act=active(), went=act.filter(p=>p.canyonA===true||(p.canyonS||0)>0), miss=act.filter(p=>!(p.canyonA===true||(p.canyonS||0)>0));
+  const pct=act.length?went.length/act.length*100:0;
+  const top=[...went].sort((a,b)=>(b.canyonS||0)-(a.canyonS||0));
+  const max=Math.max(1,...top.map(p=>p.canyonS||0));
+  $('#canyonBox').innerHTML = `<div class="kpis"><div class="kpi"><b>${went.length} / ${act.length}</b><span>attended (${Math.round(pct)}%)</span></div><div class="kpi"><b>${fmtM(top.reduce((a,p)=>a+(p.canyonS||0),0))}</b><span>total score</span></div><div class="kpi"><b>${fmtM(median(top.map(p=>p.canyonS)))}</b><span>median score</span></div></div>
+  ${miss.length?`<div class="sec">❌ DID NOT ATTEND (${miss.length})</div><div class="chips">${miss.map(p=>`<span class="chip">${esc(p.name)}</span>`).join('')}</div>`:'<div class="sec">✅ Full attendance</div>'}
+  <div class="sec">SCORE</div>
+  <div class="hbars">${top.map((p,i)=>`<div class="hb" onclick="openPlayer(${CUR.indexOf(p)})"><span class="rk">${i+1}</span><span class="nm">${esc(p.name)}</span><span class="tr"><span class="fl" style="width:${Math.max(.5,(p.canyonS||0)/max*100)}%;background:var(--red)"></span><span class="vl" style="left:${Math.min(85,(p.canyonS||0)/max*100)}%;margin-left:4px">${fmtM(p.canyonS)}</span></span></div>`).join('')}</div>`;
+}
+
+function renderDaily(){
+  const has=CUR.some(p=>p.days.some(v=>v!=null));
+  if(!has){ $('#dailyBox').innerHTML=`<div class="empty">No daily VS in this capture yet.<br>Next capture will include VS_Mon … VS_Sat.</div>`; return; }
+  const upto=DAY;
+  const rows=CUR.map(p=>{ const ok=p.days.slice(0,upto).filter(v=>v!=null&&v>=DAILY_MIN).length; return {p,ok}; }).sort((a,b)=>a.ok-b.ok||(a.p.vs||0)-(b.p.vs||0));
+  const dayTot=DAY_KEYS.map((_,i)=>CUR.reduce((a,p)=>a+(p.days[i]||0),0));
+  const lbl=['Mon','Tue','Wed','Thu','Fri','Sat'];
+  $('#dailyBox').innerHTML = `<div class="chips" style="margin-bottom:10px">${lbl.slice(0,upto).map((l,i)=>`<span class="chip">${l}: ${fmtM(dayTot[i])}${EST.has(i)?'*':''}</span>`).join('')}</div>
+  ${EST.size?`<p class="how">* Striped days are <b>estimates</b>: the week total minus the known days, split evenly. Real daily values fill in from each new capture.</p>`:''}
+  <div class="tablewrap"><table><tr><th>Player</th><th>${lbl.map(l=>l[0]).join(' ')}</th><th class="r">Days OK</th></tr>
+  ${rows.map(({p,ok})=>`<tr><td>${esc(p.name)}</td><td><div class="days">${p.days.map((v,i)=>`<span class="d ${i>=upto||v==null?'na':v>=DAILY_MIN?'ok':'lo'}${EST.has(i)&&i<upto?' est':''}" title="${lbl[i]} ${fmtM(v)}${EST.has(i)?' (est.)':''}"></span>`).join('')}</div></td><td class="r">${ok}/${upto}</td></tr>`).join('')}
+  </table></div>`;
+}
+
+function renderActivity(){
+  const has=CUR.some(p=>p.seen!=null);
+  const rows=CUR.map(p=>{
+    let flag=null;
+    if(p.seen!=null&&p.seen>=INACTIVE_H) flag=['INACTIVE','x'];
+    else if(p.seen!=null&&p.seen>=AWAY_H) flag=['AWAY','x'];
+    else if(p.seen!=null&&p.seen>=12&&(p.vs||0)<target()) flag=['WATCH','y'];
+    else if(!p.vs && !p.isNew) flag=['ZERO VS','x'];
+    return {p,flag};
+  }).filter(x=>x.flag).sort((a,b)=>(b.p.seen??-1)-(a.p.seen??-1));
+  let html = has? '' : `<div class="empty" style="margin-bottom:10px">Last-seen times not in this capture yet — the next capture will include them for all players.</div>`;
+  html += rows.length ? `<div class="tablewrap"><table><tr><th>Player</th><th class="r">Last seen</th><th class="r">VS</th><th class="r">Donation</th><th class="r">Alert</th></tr>
+    ${rows.map(({p,flag})=>`<tr><td>${esc(p.name)}</td><td class="r">${fmtSeen(p.seen)}</td><td class="r">${fmtM(p.vs)}</td><td class="r">${fmtM(p.don)}</td><td class="r"><span class="pill ${flag[1]}">${flag[0]}</span></td></tr>`).join('')}</table></div>`
+    : `<div class="empty">No activity alerts. ✅</div>`;
+  $('#activityBox').innerHTML=html;
+}
+
+function renderRanks(){
+  const order=['R1','R2','R3','R4','R5'];
+  const med={}; order.forEach(r=>med[r]=median(CUR.filter(p=>p.rank===r&&!p.isNew).map(p=>p.vs)));
+  if(!CUR.some(p=>p.rank)){ $('#rankBox').innerHTML='<div class="empty">No Rank column in this capture.</div>'; return; }
+  const up=CUR.filter(p=>['R1','R2'].includes(p.rank)&&!p.isNew).filter(p=>{ const nx=order[order.indexOf(p.rank)+1]; return (p.vs||0)>=1.4*(med[p.rank]||Infinity) && (p.vs||0)>=(med[nx]||Infinity); }).sort((a,b)=>b.vs-a.vs);
+  const down=CUR.filter(p=>p.rank==='R3'&&!p.isNew&&(p.vs||0)<0.6*(med.R3||0)).sort((a,b)=>(a.vs||0)-(b.vs||0));
+  $('#rankBox').innerHTML = `<div class="chips" style="margin-bottom:6px">${order.filter(r=>med[r]!=null).map(r=>`<span class="chip">${r} median ${fmtM(med[r])}</span>`).join('')}</div>
+  <div class="sec">▲ PERFORMING ABOVE THEIR RANK (≥1.4× own median and ≥ next rank's median)</div>
+  ${up.length?`<table>${up.map(p=>`<tr><td>${esc(p.name)} <span class="pill y">${p.rank}</span></td><td class="r up">${fmtM(p.vs)}</td><td class="r">→ ${order[order.indexOf(p.rank)+1]}</td></tr>`).join('')}</table>`:'<div class="empty">None this week.</div>'}
+  <div class="sec">▼ R3 UNDER 60% OF THE R3 MEDIAN</div>
+  ${down.length?`<div class="chips">${down.map(p=>`<span class="chip">${esc(p.name)} ${fmtM(p.vs)}</span>`).join('')}</div>`:'<div class="empty">None this week.</div>'}
+  ${FINAL?'':'<p class="how" style="margin-top:10px">Mid-week numbers — decide on Saturday\'s close.</p>'}`;
+}
+
+
+/* ============================ CHARTS ============================ */
+const METRICS = [
+  ['vs','VS'],['don','Donation'],['arena','Arena'],['power','Power'],['kills','Kills'],['alltime','All-Time VS']
+];
+let chartMetric='vs', chartRank='ALL';
+function paceColor(p){ const v=pacePct(p); return v==null?'#555':v>=100?'var(--green)':v>=60?'var(--amber)':'var(--red2)'; }
+function renderCharts(){ renderMulti(); renderRankBars(); renderQuad(); renderHQ(); }
+
+function renderRankBars(){
+  const hasAT = CUR.some(p=>allTime(p)!=null);
+  $('#metricChips').innerHTML = METRICS.filter(([k])=>k!=='alltime'||hasAT)
+    .map(([k,l])=>`<button class="mchip ${k===chartMetric?'on':''}" onclick="chartMetric='${k}';renderRankBars()">${l}</button>`).join('');
+  const ranks=['ALL',...['R5','R4','R3','R2','R1'].filter(r=>CUR.some(p=>p.rank===r))];
+  $('#rankChips').innerHTML = ranks.map(r=>`<button class="mchip ${r===chartRank?'on':''}" onclick="chartRank='${r}';renderRankBars()">${r==='ALL'?'All ranks':r}</button>`).join('');
+  const val = p => chartMetric==='alltime' ? allTime(p) : p[chartMetric];
+  const full = CUR.filter(p=>chartRank==='ALL'||p.rank===chartRank).filter(p=>val(p)!=null).sort((a,b)=>val(b)-val(a));
+  const posOf = new Map(full.map((p,i)=>[p.name,i+1]));
+  if(MULTI.length) $('#rankChips').innerHTML += `<button class="mchip ${onlySel?'on':''}" onclick="onlySel=!onlySel;renderRankBars()">★ Only selected (${MULTI.length})</button>`;
+  const list = (onlySel && MULTI.length) ? full.filter(p=>MULTI.includes(p.name)) : full;
+  if(!list.length){ $('#rankBars').innerHTML='<div class="empty">No data for this metric.</div>'; $('#rankLegend').innerHTML=''; return; }
+  const max = Math.max(...list.map(val), chartMetric==='vs'?target():0) || 1;
+  const isVS = chartMetric==='vs';
+  const med = median(list.map(val));
+  $('#rankLegend').innerHTML = isVS
+    ? `<span><i style="background:var(--green)"></i>meets ${fmtM(target())}</span><span><i style="background:var(--amber)"></i>60%+</span><span><i style="background:var(--red2)"></i>below</span><span>┆ minimum</span><span>median ${fmtM(med)}</span>`
+    : `<span>${list.length} players</span><span>median ${fmtM(med)}</span><span>total ${fmtM(list.reduce((a,p)=>a+val(p),0))}</span>`;
+  const pl = isVS ? `<span class="pl" style="left:${target()/max*100}%"></span>` : '';
+  $('#rankBars').innerHTML = list.map((p,i)=>{
+    const w = Math.max(val(p)/max*100, 0.5);
+    const col = isVS ? paceColor(p) : 'var(--red)';
+    const inside = w > 70;
+    const mc = MULTI.includes(p.name) ? multiColor(p.name) : null;
+    return `<div class="hb${p.name===SEL?' hl':''}${mc?' ms':''}" title="${esc(p.name)} · ${p.rank||''} · HQ ${p.hq??'—'}" onclick="openPlayer(${CUR.indexOf(p)})">
+      <span class="rk">${posOf.get(p.name)}</span><span class="nm" style="${mc?`color:${mc}`:''}">${mc?'● ':''}${esc(p.name)}</span>
+      <span class="tr"><span class="fl" style="width:${w}%;background:${mc&&!isVS?mc:col}"></span>${pl}
+      <span class="vl" style="${inside?`right:${100-w}%;margin-right:4px;color:#fff`:`left:${w}%;margin-left:4px;color:var(--txt)`}">${fmtM(val(p))}</span></span></div>`;
+  }).join('');
+}
+
+function renderQuad(){
+  const pts = CUR.filter(p=>p.arena>0 && p.kills>0);
+  if(pts.length<3){ $('#quad').innerHTML='<div class="empty">Needs Arena and Kills.</div>'; return; }
+  const W=400,H=360,L=40,R=58,T=22,B=30;
+  const lx=v=>Math.log10(v), xs=pts.map(p=>lx(p.arena)), ys=pts.map(p=>lx(p.kills));
+  const x0=Math.min(...xs)-0.05,x1=Math.max(...xs)+0.05,y0=Math.min(...ys)-0.1,y1=Math.max(...ys)+0.1;
+  const X=v=>L+(lx(v)-x0)/(x1-x0)*(W-L-R), Y=v=>H-B-(lx(v)-y0)/(y1-y0)*(H-T-B);
+  const mx=median(pts.map(p=>p.arena)), my=median(pts.map(p=>p.kills));
+  const ticks=(a,b)=>{ const o=[]; for(let e=Math.floor(a);e<=Math.ceil(b);e++) for(const m of [1,2,5]){ const v=m*10**e; if(lx(v)>=a&&lx(v)<=b) o.push(v);} return o; };
+  const top = new Set([...pts].sort((a,b)=>b.kills-a.kills).slice(0,5).concat([...pts].sort((a,b)=>b.arena-a.arena).slice(0,2)).map(p=>p.name));
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block">`;
+  ticks(x0,x1).forEach(v=>{ s+=`<line x1="${X(v)}" x2="${X(v)}" y1="${T}" y2="${H-B}" stroke="#ffffff10"/><text x="${X(v)}" y="${H-B+16}" fill="#9a9aa2" font-size="10" text-anchor="middle">${fmtM(v)}</text>`; });
+  ticks(y0,y1).forEach(v=>{ s+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#ffffff10"/><text x="${L-6}" y="${Y(v)+4}" fill="#9a9aa2" font-size="10" text-anchor="end">${fmtM(v)}</text>`; });
+  s+=`<line x1="${X(mx)}" x2="${X(mx)}" y1="${T}" y2="${H-B}" stroke="#F2A3B3" stroke-dasharray="2 4"/><line x1="${L}" x2="${W-R}" y1="${Y(my)}" y2="${Y(my)}" stroke="#F2A3B3" stroke-dasharray="2 4"/>`;
+  s+=`<text x="${W-R-4}" y="${T-8}" fill="#7fdca2" font-size="11" text-anchor="end" font-weight="700">WARRIORS</text>`;
+  s+=`<text x="${W-R-4}" y="${H-B-8}" fill="#e0a02f" font-size="11" text-anchor="end" font-weight="700">FARMS</text>`;
+  s+=`<text x="${L+6}" y="${T-8}" fill="#8fc3ff" font-size="11" font-weight="700">FIGHTERS</text>`;
+  s+=`<text x="${L+6}" y="${H-B-8}" fill="#9a9aa2" font-size="11" font-weight="700">GROWING</text>`;
+  s+=`<text x="${(L+W-R)/2}" y="${H-4}" fill="#9a9aa2" font-size="10" text-anchor="middle">Arena power →</text>`;
+  const dim = MULTI.length>0;
+  pts.forEach((p,i)=>{
+    const c=paceColor(p);
+    if(dim && MULTI.includes(p.name)) return;
+    s+=`<circle cx="${X(p.arena)}" cy="${Y(p.kills)}" r="5" fill="${c}" fill-opacity="${dim?.18:.85}" stroke="#141416" style="cursor:pointer" onclick="quadTip(${i})"><title>${esc(p.name)}</title></circle>`;
+    if(dim) return;
+    if(p.name===SEL) s+=`<circle cx="${X(p.arena)}" cy="${Y(p.kills)}" r="10" fill="none" stroke="#fff" stroke-width="2.5"/><text x="${X(p.arena)+13}" y="${Y(p.kills)+4}" fill="#fff" font-size="12" font-weight="700">${esc(p.name)}</text>`;
+    else if(top.has(p.name)) s+=`<text x="${X(p.arena)+8}" y="${Y(p.kills)+4}" fill="#ecebe8" font-size="10">${esc(p.name)}</text>`;
+  });
+  if(dim) pts.forEach((p,i)=>{ if(!MULTI.includes(p.name)) return; const mc=multiColor(p.name);
+    s+=`<circle cx="${X(p.arena)}" cy="${Y(p.kills)}" r="8" fill="${mc}" stroke="#fff" stroke-width="2" style="cursor:pointer" onclick="quadTip(${i})"><title>${esc(p.name)}</title></circle>`;
+    s+=`<text x="${X(p.arena)+11}" y="${Y(p.kills)+4}" fill="${mc}" font-size="12" font-weight="700" paint-order="stroke" stroke="#141416" stroke-width="3">${esc(p.name)}</text>`; });
+  s+='</svg>';
+  $('#quad').innerHTML=s; window._qp=pts;
+}
+function quadTip(i){ const p=window._qp[i]; $('#quadTip').textContent=`${p.name} · ${p.rank||''} HQ ${p.hq??'—'} · Arena ${fmtM(p.arena)} · Kills ${fmtM(p.kills)} · VS ${fmtM(p.vs)}`; }
+
+function renderHQ(){
+  const g={}; active().forEach(p=>{ if(p.hq==null) return; (g[p.hq]=g[p.hq]||[]).push(p); });
+  const lv=Object.keys(g).map(Number).sort((a,b)=>b-a);
+  if(!lv.length){ $('#hqBoard').innerHTML='<div class="empty">No HQ column.</div>'; return; }
+  window._hq={};
+  $('#hqBoard').innerHTML = lv.map(h=>{
+    const ps=g[h], ok=ps.filter(p=>pacePct(p)>=100), cl=ps.filter(p=>pacePct(p)>=60&&pacePct(p)<100), lo=ps.filter(p=>(pacePct(p)??0)<60);
+    window._hq[h]={ok,cl,lo};
+    const seg=(arr,c,k)=>arr.length?`<span style="width:${arr.length/ps.length*100}%;background:${c}" onclick="hqTip(${h},'${k}')">${arr.length}</span>`:'';
+    const pct=Math.round(ok.length/ps.length*100);
+    return `<div class="hqrow"><b>HQ ${h}</b><div class="hqbar">${seg(ok,'var(--green)','ok')}${seg(cl,'var(--amber)','cl')}${seg(lo,'var(--red2)','lo')}</div><span class="pill ${pct>=90?'g':pct>=70?'y':'x'}">${pct}% · ${ps.length}</span></div>`;
+  }).join('');
+}
+function hqTip(h,k){ const l=window._hq[h][k].sort((a,b)=>(a.vs||0)-(b.vs||0)); $('#hqTip').innerHTML=`HQ ${h} · ${ {ok:'meeting',cl:'close',lo:'below'}[k] }: `+l.map(p=>`${esc(p.name)} ${fmtM(p.vs)}`).join(' · '); }
+
+
+/* ============================ SPOTLIGHT + PROFILE ============================ */
+let SEL = null;
+const CYR = {'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'e','ж':'zh','з':'z','и':'i','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'h','ц':'c','ч':'ch','ш':'sh','щ':'sh','ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya','η':'n','α':'a','τ':'t','σ':'s','υ':'u','ø':'o'};
+const fold = s => String(s||'').toLowerCase().split('').map(c=>CYR[c]??c).join('').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9぀-ヿ一-鿿]/g,'');
+function score(q, name){
+  const a=fold(name), b=fold(q); if(!b) return 0;
+  if(a.startsWith(b)) return 100-a.length*.1;
+  if(a.includes(b)) return 70-a.indexOf(b);
+  let i=0; for(const c of a){ if(c===b[i]) i++; if(i===b.length) return 40; }
+  if(name.toLowerCase().includes(q.toLowerCase())) return 60;
+  return 0;
+}
+let suggIdx=0, suggList=[];
+function spotInput(){
+  const q=$('#spotQ').value.trim();
+  suggList = q ? CUR.map((p,i)=>({i,s:Math.max(score(q,p.name),score(q,p.raw))})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,8) : [];
+  suggIdx=0; drawSugg();
+}
+function drawSugg(){
+  const el=$('#spotS');
+  if(!suggList.length){ el.classList.remove('on'); el.innerHTML=''; return; }
+  el.innerHTML = suggList.map((x,k)=>{ const p=CUR[x.i]; return `<div class="${k===suggIdx?'act':''}" onmousedown="openPlayer(${x.i})"><span>${esc(p.name)}</span><small>${p.rank||''} · HQ ${p.hq??'—'} · VS ${fmtM(p.vs)}</small></div>`; }).join('');
+  el.classList.add('on');
+}
+$('#spotQ').addEventListener('input',spotInput);
+$('#spotQ').addEventListener('keydown',e=>{
+  if(!suggList.length) return;
+  if(e.key==='ArrowDown'){ suggIdx=(suggIdx+1)%suggList.length; drawSugg(); e.preventDefault(); }
+  else if(e.key==='ArrowUp'){ suggIdx=(suggIdx-1+suggList.length)%suggList.length; drawSugg(); e.preventDefault(); }
+  else if(e.key==='Enter'){ openPlayer(suggList[suggIdx].i); e.preventDefault(); }
+  else if(e.key==='Escape'){ suggList=[]; drawSugg(); }
+});
+$('#spotQ').addEventListener('blur',()=>setTimeout(()=>{ suggList=[]; drawSugg(); },150));
+
+function openPlayer(i){
+  const p=CUR[i]; if(!p) return;
+  SEL=p.name; store('amps_sel',SEL);
+  $('#spotQ').value=''; suggList=[]; drawSugg(); $('#spotQ').blur();
+  renderProfile(); renderRankBars(); renderQuad();
+  document.querySelector('#nav button[data-v="player"]').click();
+}
+
+function rankOf(p,key,list){ const l=(list||CUR).filter(x=>x[key]!=null).sort((a,b)=>b[key]-a[key]); const i=l.indexOf(p); return i<0?null:{pos:i+1,of:l.length,pctl:Math.round((l.length-1-i)/(Math.max(l.length-1,1))*100)}; }
+
+function renderProfile(){
+  const p = CUR.find(x=>x.name===SEL);
+  if(!p){ return; }
+  const pp=pacePct(p), need=Math.max(0,target()-(p.vs||0));
+  const metr=[['vs','VS'],['don','Donation'],['arena','Arena'],['power','Power'],['kills','Kills']];
+  const rk={}; metr.forEach(([k])=>rk[k]=rankOf(p,k));
+  const sameRank=CUR.filter(x=>x.rank===p.rank&&!x.isNew), sameHQ=CUR.filter(x=>x.hq===p.hq&&!x.isNew);
+  const kpm = p.arena ? p.kills/(p.arena/1e6) : null;
+  const kpmMed = median(CUR.filter(x=>x.arena).map(x=>x.kills/(x.arena/1e6)));
+  // zone
+  const mA=median(CUR.map(x=>x.arena)), mK=median(CUR.map(x=>x.kills));
+  const zone = combatProfile(p)||'—';
+  // flags
+  const flags=[];
+  if(p.isNew) flags.push(['NEW · rookie shield','n']);
+  if(pp!=null) flags.push(pp>=100?[FINAL?'MET MINIMUM':'ON PACE','g']:pp>=60?['CLOSE','y']:['BELOW','x']);
+  if(p.seen!=null) flags.push(p.seen>=INACTIVE_H?['INACTIVE '+fmtSeen(p.seen),'x']:p.seen>=AWAY_H?['AWAY '+fmtSeen(p.seen),'x']:['Seen '+fmtSeen(p.seen)+(p.seen?' ago':''),'m']);
+  flags.push([zone,PROF_CLS[zone]||'m']);
+  // delta
+  let deltaHTML='';
+  if(PREV){ const d=deltas().find(x=>x.p.name===p.name); if(d&&d.status!=='NEW') deltaHTML=`<div class="sec">SINCE LAST CAPTURE</div><table class="cmp"><tr><td>+Kills</td><td class="r ${d.dk>0?'up':''}">${sgn(d.dk)}</td><td>+Arena</td><td class="r ${d.da>0?'up':d.da<0?'dn':''}">${sgn(d.da)}</td></tr><tr><td>+Power</td><td class="r ${d.dp>0?'up':d.dp<0?'dn':''}">${sgn(d.dp)}</td><td>Prev VS</td><td class="r">${fmtM(d.prevVS)}</td></tr></table><div style="margin-top:4px"><span class="pill ${STATUS_CLS[d.status]}">${d.status}</span></div>`; }
+  const hasDaily=p.days.some(v=>v!=null);
+  const lbl=['Mon','Tue','Wed','Thu','Fri','Sat'];
+  const dailyHTML = hasDaily ? `<div class="sec">DAILY VS</div><table class="cmp"><tr>${lbl.map(l=>`<td style="text-align:center;color:var(--mut)">${l}</td>`).join('')}</tr><tr>${p.days.map((v,i)=>`<td style="text-align:center" class="${v==null?'':v>=DAILY_MIN?'up':'dn'}">${i<DAY?fmtM(v)+(EST.has(i)?'*':''):'·'}</td>`).join('')}</tr></table>` : '';
+  const at=allTime(p);
+  $('#profile').innerHTML = `<div class="card">
+    <div class="prof-hd"><div><h2>${esc(p.name)}</h2><div style="color:var(--mut);font-size:13px;margin-top:4px">${p.rank||'—'} · HQ ${p.hq??'—'}${p.raw!==p.name?' · in-game: '+esc(p.raw):''}</div></div>
+      <button class="btn ghost" onclick="copyPersonal()">Personal message</button></div>
+    <div class="chips" style="margin-top:10px">${flags.map(([t,c])=>`<span class="pill ${c}">${t}</span>`).join('')}</div>
+    <div class="tiles">
+      ${metr.map(([k,l])=>`<div class="tile"><span>${l}</span><b>${fmtM(p[k])}</b><em>${rk[k]?'#'+rk[k].pos+' of '+rk[k].of:'—'}</em></div>`).join('')}
+      <div class="tile"><span>${at!=null?'All-Time VS':'Kills / M arena'}</span><b>${at!=null?fmtM(at):kpm!=null?fmtM(kpm):'—'}</b><em>${at!=null?'':kpmMed?'median '+fmtM(kpmMed):''}</em></div>
+    </div>
+    <div class="sec">VS ${FINAL?'VS WEEKLY MINIMUM':'PACE · DAY '+DAY+'/'+VS_DAYS}</div>
+    <div class="bar" style="height:14px"><i style="width:${Math.min(100,pp||0)}%;background:${paceColor(p)}"></i></div>
+    <div style="font-size:12px;color:var(--mut)">${pp==null?'No VS data':Math.round(pp)+'% of '+fmtM(target())+(need?` · needs ${fmtM(need)} more${FINAL?'':` ≈ ${fmtM(need/Math.max(1,VS_DAYS-DAY+1))}/day`}`:' · ✅ done')}</div>
+    <div class="sec">VS THE ALLIANCE (percentile · dashed = median)</div>
+    ${metr.map(([k,l])=>rk[k]?`<div class="pct"><span>${l}</span><span class="t"><i style="width:${rk[k].pctl}%"></i><u></u></span><span class="r">${rk[k].pctl}%</span></div>`:'').join('')}
+    <div class="sec">COMPARED WITH</div>
+    <table class="cmp"><tr><th></th><th class="r">Player</th><th class="r">${p.rank||'Rank'} median</th><th class="r">HQ ${p.hq??''} median</th></tr>
+    ${metr.map(([k,l])=>{ const a=median(sameRank.map(x=>x[k])), b=median(sameHQ.map(x=>x[k])); const c=v=>v==null||p[k]==null?'':p[k]>=v?'up':'dn'; return `<tr><td>${l}</td><td class="r"><b>${fmtM(p[k])}</b></td><td class="r ${c(a)}">${fmtM(a)}</td><td class="r ${c(b)}">${fmtM(b)}</td></tr>`; }).join('')}
+    </table>
+    ${deltaHTML}${dailyHTML}
+  </div>`;
+}
+
+function copyPersonal(){
+  const p=CUR.find(x=>x.name===SEL); if(!p) return;
+  const pp=pacePct(p)||0, need=Math.max(0,target()-(p.vs||0)), r=rankOf(p,'vs');
+  let m;
+  if(p.isNew) m=`Welcome to [HALO], ${p.name}! 🎉 This week you're on rookie shield. From next week the VS minimum is ${fmtM(DAILY_MIN)}/day. Ask us anything!`;
+  else if(pp>=150) m=`${p.name}, amazing VS! 🔥 ${fmtM(p.vs)} — #${r.pos} in the alliance. Thank you for carrying HALO!`;
+  else if(pp>=100) m=`${p.name}, great job — ${fmtM(p.vs)} VS, you're ${FINAL?'above the minimum':'on pace'} ✅. Keep it up!`;
+  else if(FINAL) m=`${p.name}, this week you closed at ${fmtM(p.vs)} VS (minimum ${fmtM(target())}). Let's aim for ${fmtM(DAILY_MIN)}/day next week 💪`;
+  else m=`${p.name}, quick check-in 📣 You have ${fmtM(p.vs)} VS on day ${DAY}/${VS_DAYS}. You need ${fmtM(need)} more ≈ ${fmtM(need/Math.max(1,VS_DAYS-DAY+1))}/day. You've got this 💪`;
+  copy(m);
+}
+SEL = load('amps_sel');
+
+
+/* ============================ MULTI-SELECT SPOTLIGHT ============================ */
+let MULTI = (load('amps_multi')||[]), onlySel=false;
+const MCOLORS=['#F2A3B3','#7fdca2','#e0a02f','#8fc3ff','#c79bff','#5fd4d4','#ff8a65','#d4e157'];
+const multiColor = n => MCOLORS[MULTI.indexOf(n)%MCOLORS.length];
+let mIdx=0, mList=[];
+function multiInput(){
+  const q=$('#multiQ').value.trim();
+  mList = q ? CUR.map((p,i)=>({i,s:Math.max(score(q,p.name),score(q,p.raw))})).filter(x=>x.s>0&&!MULTI.includes(CUR[x.i].name)).sort((a,b)=>b.s-a.s).slice(0,8) : [];
+  mIdx=0; drawMulti();
+}
+function drawMulti(){
+  const el=$('#multiS');
+  if(!mList.length){ el.classList.remove('on'); el.innerHTML=''; return; }
+  el.innerHTML = mList.map((x,k)=>{ const p=CUR[x.i]; return `<div class="${k===mIdx?'act':''}" onmousedown="event.preventDefault();addMulti(${x.i})"><span>${esc(p.name)}</span><small>${p.rank||''} · HQ ${p.hq??'—'} · VS ${fmtM(p.vs)}</small></div>`; }).join('');
+  el.classList.add('on');
+}
+function addMulti(i){ const n=CUR[i].name; if(!MULTI.includes(n)) MULTI.push(n); store('amps_multi',MULTI); $('#multiQ').value=''; mList=[]; drawMulti(); renderCharts(); $('#multiQ').focus(); }
+function delMulti(n){ MULTI=MULTI.filter(x=>x!==n); if(!MULTI.length) onlySel=false; store('amps_multi',MULTI); renderCharts(); }
+function clearMulti(){ MULTI=[]; onlySel=false; store('amps_multi',MULTI); renderCharts(); }
+$('#multiQ').addEventListener('input',multiInput);
+$('#multiQ').addEventListener('keydown',e=>{
+  if(e.key==='Backspace' && !$('#multiQ').value && MULTI.length){ delMulti(MULTI[MULTI.length-1]); return; }
+  if(!mList.length) return;
+  if(e.key==='ArrowDown'){ mIdx=(mIdx+1)%mList.length; drawMulti(); e.preventDefault(); }
+  else if(e.key==='ArrowUp'){ mIdx=(mIdx-1+mList.length)%mList.length; drawMulti(); e.preventDefault(); }
+  else if(e.key==='Enter'){ addMulti(mList[mIdx].i); e.preventDefault(); }
+  else if(e.key==='Escape'){ mList=[]; drawMulti(); }
+});
+$('#multiQ').addEventListener('blur',()=>setTimeout(()=>{ mList=[]; drawMulti(); },150));
+
+function renderMulti(){
+  MULTI = MULTI.filter(n=>CUR.some(p=>p.name===n));
+  const sel = MULTI.map(n=>CUR.find(p=>p.name===n));
+  $('#multiChips').innerHTML = sel.map(p=>`<span class="sel"><i style="background:${multiColor(p.name)}"></i>${esc(p.name)}<b onclick="delMulti('${esc(p.name).replace(/'/g,"\\'")}')">✕</b></span>`).join('')
+    + (sel.length?`<button class="mchip" onclick="clearMulti()">Clear all</button>`:'');
+  if(!sel.length){ $('#multiTable').innerHTML=''; return; }
+  const rows=[
+    ['Rank',p=>p.rank||'—',null],['HQ',p=>p.hq??'—','hq'],
+    ['VS',p=>fmtM(p.vs),'vs'],[FINAL?'% Min':'Pace',p=>{const v=pacePct(p); return v==null?'—':`<span class="pill ${v>=100?'g':v>=60?'y':'x'}">${Math.round(v)}%</span>`;},null],
+    ['Donation',p=>fmtM(p.don),'don'],['Arena',p=>fmtM(p.arena),'arena'],['Power',p=>fmtM(p.power),'power'],['Kills',p=>fmtM(p.kills),'kills'],
+    ['Kills / M arena',p=>p.arena?fmtM(p.kills/(p.arena/1e6)):'—',null],['Seen',p=>fmtSeen(p.seen),null]
+  ];
+  const best = k => k ? Math.max(...sel.map(p=>p[k]??-Infinity)) : null;
+  $('#multiTable').innerHTML = `<table style="margin-top:6px"><tr><th></th>${sel.map(p=>`<th class="r" style="color:${multiColor(p.name)};cursor:pointer" onclick="openPlayer(${CUR.indexOf(p)})">${esc(p.name)}</th>`).join('')}</tr>
+    ${rows.map(([l,f,k])=>{ const b=best(k); return `<tr><td style="color:var(--mut)">${l}</td>${sel.map(p=>`<td class="r" style="${k&&sel.length>1&&p[k]===b?'color:#7fdca2;font-weight:700':''}">${f(p)}</td>`).join('')}</tr>`; }).join('')}
+  </table><p class="how" style="margin:6px 0 0">Green = best of the selection. Tap a name to open the full profile.</p>`;
+}
+
+/* ============================ MESSAGES ============================ */
+function copy(t){ (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Copied ✔')).catch(()=>{ prompt('Copy:',t); }); }
+function copyCheckIn(){
+  const bl=below(); if(!bl.length) return toast('Nobody below pace 👍');
+  copy(`[HALO] VS check-in 📣 ${FINAL?'Week closed':'Day '+DAY+'/'+VS_DAYS}: minimum is ${fmtM(DAILY_MIN)}/day. ${bl.map(p=>p.name).join(', ')} — let's push today! 💪`);
+}
+function copyShoutout(){
+  const top=[...CUR].sort((a,b)=>(b.vs||0)-(a.vs||0)).slice(0,5);
+  copy(`[HALO] Shoutout 🏆 Top VS ${FINAL?'this week':'so far'}: ${top.map((p,i)=>`${i+1}. ${p.name}`).join(' · ')}. Great work!`);
+}
+
+/* ============================ SETUP ============================ */
+function fillCfg(){ $('#cfgId').value=CFG.id; $('#cfgLive').value=CFG.live; $('#cfgPrev').value=CFG.prev; $('#cfgAlias').value=CFG.alias; $('#cfgHist').value=CFG.hist; }
+function saveCfg(){ CFG={id:$('#cfgId').value.trim(),live:$('#cfgLive').value.trim(),prev:$('#cfgPrev').value.trim(),alias:$('#cfgAlias').value.trim(),hist:$('#cfgHist').value.trim()}; store('amps_cfg',CFG); toast('Saved'); loadAll(); }
+function resetCfg(){ store('amps_cfg'); CFG=Object.assign({},DEFAULTS); loadAll(); }
+function loadFile(inp,slot){ const f=inp.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ MANUAL[slot]=parseCSV(r.result); toast(f.name+' loaded'); loadAll(); }; r.readAsText(f,'utf-8'); }
+
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+b.dataset.v));
+  store('amps_tab',b.dataset.v); window.scrollTo(0,0);
+});
+const lastTab=load('amps_tab'); if(lastTab){ const b=document.querySelector(`#nav button[data-v="${lastTab}"]`); if(b) b.click(); }
+loadAll();
+</script>
+</body>
+</html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HALO AMPS</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#141416;--panel:#232327;--panel2:#2c2c31;--edge:#3a3a40;--red:#A32734;--red2:#c93a48;--pink:#F2A3B3;--gold:#d9a93a;--green:#3fae6a;--amber:#e0a02f;--txt:#ecebe8;--mut:#9a9aa2}
+*{box-sizing:border-box}
+body{margin:0;color:var(--txt);font-family:'Roboto Condensed',sans-serif;background:radial-gradient(ellipse 900px 380px at 50% -80px,#5a141d 0%,#2a0f13 45%,var(--bg) 75%) no-repeat,var(--bg)}
+.wrap{max-width:760px;margin:0 auto;padding:16px 16px 90px}
+header{display:flex;gap:14px;align-items:center;margin:4px 0 6px}
+header .banner{flex:none;width:74px;filter:drop-shadow(0 4px 6px #000a)}
+header .tag{font-family:Oswald;font-size:12px;letter-spacing:3px;color:var(--pink)}
+header h1{font-family:Oswald;font-size:28px;letter-spacing:2px;margin:0;line-height:1.05}
+header .motto{font-size:12px;font-style:italic;color:#cfc6c8;margin-top:2px}
+.stamp{color:var(--mut);font-size:13px;margin-top:6px}
+.divider{height:3px;margin:10px 0 4px;background:linear-gradient(90deg,var(--red),var(--pink) 50%,transparent)}
+.src{font-size:12px;margin:8px 0 14px;padding:6px 10px;border-radius:6px;background:#1c1c1f;border:1px solid var(--edge)}
+.src.ok{border-color:#2f6b45;color:#7fdca2}.src.warn{border-color:#6b5520;color:var(--amber)}.src.err{border-color:var(--red);color:#ff8a95}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--edge);border-radius:10px;padding:14px;margin-bottom:14px;box-shadow:inset 0 1px 0 #ffffff12,0 2px 0 #000}
+.card h2{font-family:Oswald;font-size:17px;letter-spacing:1px;margin:0 0 2px;text-transform:uppercase;border-left:4px solid var(--red);padding-left:8px}
+.card{border-top:2px solid #A3273488}
+.blist{margin-top:8px}
+.bl{display:grid;grid-template-columns:18px 1fr auto;gap:4px 8px;align-items:center;padding:7px 0;border-top:1px solid #ffffff10;font-size:13px}
+.bl:first-child{border-top:0}
+.bl .n{color:var(--mut);text-align:right}
+.bl .who{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bl .v{text-align:right;font-weight:700}
+.bl .meter{grid-column:2/4;height:6px;background:#1c1c1f;border-radius:3px;overflow:hidden}
+.bl .meter i{display:block;height:100%}
+.bl .need{grid-column:2/4;font-size:11px;color:var(--mut)}
+.how{color:var(--mut);font-size:12px;margin:0 0 10px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:#1c1c1f;border:1px solid var(--edge);border-radius:8px;padding:10px}
+.kpi b{display:block;font-family:Oswald;font-size:26px;line-height:1.1}.kpi span{color:var(--mut);font-size:12px}
+.line{display:flex;gap:10px;padding:9px 0;border-top:1px solid #ffffff10;font-size:14px;align-items:flex-start}
+.line:first-of-type{border-top:0}.ic{width:20px;flex:none;text-align:center}
+.bar{height:10px;border-radius:5px;background:#3a3a40;overflow:hidden;margin:8px 0 2px}.bar i{display:block;height:100%;background:var(--green)}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{color:var(--mut);font-weight:400;text-align:left;font-size:11px;text-transform:uppercase;padding:6px 4px;cursor:pointer;white-space:nowrap;user-select:none}
+th.sorted{color:var(--pink)}
+td{padding:6px 4px;border-top:1px solid #ffffff10;white-space:nowrap}
+td.r,th.r{text-align:right}
+.pill{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;white-space:nowrap}
+.g{background:#1f3a2a;color:#7fdca2}.y{background:#3a2f18;color:var(--amber)}.x{background:#3d1a1f;color:#ff8a95}.n{background:#23303d;color:#8fc3ff}.m{background:#2a2a2e;color:var(--mut)}
+.days{display:flex;gap:3px}.d{width:16px;height:16px;border-radius:3px}
+.d.ok{background:var(--green)}.d.lo{background:var(--red2)}.d.na{background:#2a2a2e;border:1px dashed #555}
+.d.est{background-image:repeating-linear-gradient(45deg,#0006 0 3px,transparent 3px 6px)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chip{background:#1c1c1f;border:1px solid var(--edge);border-radius:14px;padding:4px 10px;font-size:12px}
+.up{color:#7fdca2}.dn{color:#ff8a95}
+.empty{color:var(--mut);font-size:13px;padding:14px;text-align:center;border:1px dashed var(--edge);border-radius:8px}
+input[type=text],input[type=search]{background:#1c1c1f;border:1px solid var(--edge);color:var(--txt);border-radius:6px;padding:8px 10px;font:inherit;width:100%}
+label{font-size:12px;color:var(--mut);display:block;margin:10px 0 4px}
+.btn{background:var(--red);color:#fff;border:0;border-radius:6px;padding:8px 14px;font-family:Oswald;letter-spacing:1px;cursor:pointer;font-size:14px}
+.btn.ghost{background:#1c1c1f;border:1px solid var(--edge);color:var(--txt)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sec{font-size:12px;color:var(--mut);margin:12px 0 6px;letter-spacing:.5px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#0e0e10;border-top:2px solid var(--red);display:flex;justify-content:flex-start;gap:2px;padding:6px 4px;overflow-x:auto;z-index:100}
+nav button:first-child{margin-left:auto}nav button:last-child{margin-right:auto}
+nav::-webkit-scrollbar{display:none}
+nav button{font-family:Oswald;font-size:12px;padding:8px 9px;border-radius:6px;color:var(--mut);background:none;border:0;cursor:pointer;white-space:nowrap}
+nav button.on{background:var(--red);color:#fff}
+.view{display:none}.view.on{display:block}
+
+.mchips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.mchip{background:#1c1c1f;border:1px solid var(--edge);color:var(--txt);border-radius:14px;padding:5px 11px;font-size:12px;cursor:pointer;font-family:inherit}
+.mchip.on{background:var(--red);border-color:var(--red);color:#fff}
+.hbars{position:relative}
+.hb{display:grid;grid-template-columns:22px minmax(90px,150px) 1fr;gap:6px;align-items:center;font-size:12px;height:22px;cursor:pointer}
+.hb .rk{color:var(--mut);text-align:right}
+.hb .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb .tr{position:relative;height:14px;background:#1c1c1f;border-radius:3px}
+.hb .fl{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
+.hb .vl{position:absolute;top:-1px;font-size:11px;font-weight:700;white-space:nowrap}
+.hb .pl{position:absolute;top:-3px;bottom:-3px;width:0;border-left:2px dashed #ffffffaa}
+.hb.hl .nm{color:var(--pink);font-weight:700}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--mut);margin:6px 0 10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+svg text{font-family:'Roboto Condensed',sans-serif}
+.tip{font-size:13px;min-height:20px;margin-top:6px;color:var(--pink)}
+.hqrow{display:grid;grid-template-columns:52px 1fr 70px;gap:8px;align-items:center;font-size:12px;margin:5px 0}
+.hqbar{display:flex;height:18px;border-radius:4px;overflow:hidden;background:#1c1c1f}
+.hqbar span{display:grid;place-items:center;font-size:10px;font-weight:700;color:#0009;cursor:pointer}
+
+.spot{position:sticky;top:0;z-index:20;padding:8px 0;background:linear-gradient(180deg,var(--bg) 70%,transparent)}
+.spot input{padding-left:34px;border-color:#A3273499;background:#1c1c1f url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23F2A3B3' stroke-width='2'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='M11 11l4 4'/%3E%3C/svg%3E") no-repeat 11px center}
+.sugg{position:absolute;left:0;right:0;top:100%;background:#1c1c1f;border:1px solid var(--edge);border-radius:8px;max-height:300px;overflow:auto;display:none;box-shadow:0 8px 20px #000c}
+.sugg.on{display:block}
+.sugg div{padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;gap:8px;font-size:14px;border-top:1px solid #ffffff08}
+.sugg div.act,.sugg div:hover{background:#A3273444}
+.sugg small{color:var(--mut)}
+.prof-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.prof-hd h2{font-size:24px !important}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.tile{background:#1c1c1f;border:1px solid var(--edge);border-radius:8px;padding:8px}
+.tile b{display:block;font-family:Oswald;font-size:20px}.tile span{font-size:11px;color:var(--mut)}
+.tile em{display:block;font-style:normal;font-size:11px;color:var(--pink)}
+.pct{display:grid;grid-template-columns:78px 1fr 44px;gap:8px;align-items:center;font-size:12px;margin:6px 0}
+.pct .t{height:10px;background:#1c1c1f;border-radius:5px;position:relative;overflow:hidden}
+.pct .t i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:linear-gradient(90deg,var(--red),var(--pink))}
+.pct .t u{position:absolute;top:-2px;bottom:-2px;left:50%;border-left:1px dashed #ffffff66}
+.cmp td{padding:5px 4px}
+.hb.hl{background:#A3273433;border-radius:4px}
+.mchips .sel{display:inline-flex;align-items:center;gap:6px;border-radius:14px;padding:4px 6px 4px 10px;font-size:12px;background:#1c1c1f;border:1px solid var(--edge)}
+.mchips .sel i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.mchips .sel b{cursor:pointer;color:var(--mut);padding:0 4px;font-weight:400}
+.hb.ms{background:#ffffff0d;border-radius:4px}
+.hb.ms .nm{font-weight:700}
+.tablewrap table{border-collapse:separate;border-spacing:0}
+.tablewrap th:first-child,.tablewrap td:first-child{position:sticky;left:0;z-index:2;background:#26262b}
+#weekTable th:nth-child(1),#weekTable td:nth-child(1){min-width:30px;width:30px;max-width:30px}
+#weekTable th:nth-child(2),#weekTable td:nth-child(2){position:sticky;left:30px;z-index:2;background:#26262b;box-shadow:4px 0 6px -2px #0009;max-width:130px;overflow:hidden;text-overflow:ellipsis}
+.tablewrap th:first-child{z-index:3}
+.tablewrap td:first-child:not(#weekTable td){box-shadow:4px 0 6px -2px #0009;max-width:140px;overflow:hidden;text-overflow:ellipsis}
+#weekTable td:first-child{box-shadow:none}
+.toast{z-index:101;position:fixed;bottom:64px;left:50%;transform:translateX(-50%);background:#2f6b45;color:#fff;padding:8px 14px;border-radius:6px;font-size:13px;opacity:0;transition:.3s;pointer-events:none}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <svg class="banner" viewBox="0 0 100 150" aria-label="HALO banner">
+    <defs>
+      <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c2303f"/><stop offset="1" stop-color="#7d1a25"/></linearGradient>
+    </defs>
+    <rect x="4" y="2" width="92" height="6" rx="3" fill="#3a3a40"/>
+    <path d="M10 8 H90 V128 L50 146 L10 128 Z" fill="url(#bg)" stroke="#2a0f13" stroke-width="2"/>
+    <path d="M16 14 H84 V124 L50 140 L16 124 Z" fill="none" stroke="#F2A3B3" stroke-opacity=".35" stroke-width="1.5"/>
+    <circle cx="50" cy="52" r="24" fill="#2a0f13" fill-opacity=".45" stroke="#F2A3B3" stroke-width="3"/>
+    <g stroke="#F2A3B3" stroke-width="2.6" stroke-linecap="round" fill="none">
+      <path d="M50 70 V44"/><path d="M50 52 L38 42"/><path d="M50 52 L62 42"/><path d="M50 46 L42 36"/><path d="M50 46 L58 36"/><path d="M50 44 V32"/>
+      <path d="M50 70 L42 76"/><path d="M50 70 L58 76"/>
+    </g>
+    <text x="50" y="100" text-anchor="middle" font-family="Oswald,sans-serif" font-weight="700" font-size="17" fill="#fff">&lt;HALO&gt;</text>
+    <text x="50" y="116" text-anchor="middle" font-family="Oswald,sans-serif" font-size="9" letter-spacing="1" fill="#F2A3B3">LNH FMLY</text>
+  </svg>
+  <div>
+    <div class="tag">ALLIANCE MEMBER PERFORMANCE</div>
+    <h1>HALO LNH FMLY</h1>
+    <div class="motto">One Family. Stronger Than Ever. Endless Victories!</div>
+  </div>
+</header>
+<div class="divider"></div>
+<div class="stamp" id="stamp"></div>
+<div class="src" id="src">Loading…</div>
 <div class="spot"><div style="position:relative">
   <input type="search" id="spotQ" placeholder="Spotlight — find a player…" autocomplete="off">
   <div class="sugg" id="spotS"></div>
