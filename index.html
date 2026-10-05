@@ -629,7 +629,7 @@ async function fetchCSV(v){
 
 let CFG = Object.assign({}, DEFAULTS, load('amps_cfg')||{});
 const MANUAL = {};
-let CANH=null, OUT=[], CUR=[], PREV=null, HIST=null, SOURCE='', DATA_DATE=null, DAY=VS_DAYS, FINAL=true;
+let CANH=null, OUT=[], CUR=[], PREV=null, PREV_ALL=null, HIST=null, SOURCE='', DATA_DATE=null, DAY=VS_DAYS, FINAL=true;
 
 async function loadAll(){
   const notes=[]; let cls='ok';
@@ -651,7 +651,7 @@ async function loadAll(){
     const D=['mon','tue','wed','thu','fri','sat']; if(m){ for(let i=D.indexOf(m[1].toLowerCase());i<=D.indexOf(m[2].toLowerCase());i++) EST.add(i); } }
   // previous
   PREV=null;
-  try{ const p = MANUAL.prev || await fetchCSV(CFG.prev); if(p&&p.length) PREV=normalize(p).filter(x=>!x.out); }catch(e){ notes.push('previous failed: '+e.message); }
+  try{ const p = MANUAL.prev || await fetchCSV(CFG.prev); if(p&&p.length){ PREV_ALL=normalize(p); PREV=PREV_ALL.filter(x=>!x.out); } }catch(e){ notes.push('previous failed: '+e.message); }
   if(!PREV && LOCAL_PREV_CSV.indexOf('__PREV__')<0){ const lp=normalize(parseCSV(LOCAL_PREV_CSV)); const d1=(lp.find(x=>x.date)||{}).date, d2=(CUR.find(x=>x.date)||{}).date; if(d1&&d2&&d1<d2){ PREV=lp; notes.push('previous: embedded '+d1); } }
   // canyon history (CANYON tab)
   CANH=null;
@@ -767,12 +767,18 @@ const isWarDay = () => DATA_DATE ? [6,0].includes(DATA_DATE.getDay()) : false;
 function deltas(){
   if(!PREV) return [];
   const pm=Object.fromEntries(PREV.map(p=>[p.name,p]));
+  const pa=Object.fromEntries((PREV_ALL||PREV).map(p=>[p.name,p]));
+  const seen=new Set([...(PREV_ALL||PREV).map(p=>p.name),...(CANH||[]).map(h=>h.name)]);
+  const renamedFrom=p=>{ const m=/renamed.*?(?:was|from)\s+(.+?)\)?\s*$/i.exec(p.statusTxt||''); return m?canon(m[1].trim()):null; };
   const out=CUR.map(p=>{
-    if(p.out) return {p,status:'OUT'}; const o=pm[p.name]; if(!o) return {p,status:'NEW'};
+    if(p.out) return {p,status:'OUT'};
+    let o=pm[p.name], back=false;
+    if(!o){ const rn=renamedFrom(p); if(rn&&pa[rn]) o=pa[rn]; else if(pa[p.name]){ o=pa[p.name]; back=true; } }
+    if(!o) return {p,status:seen.has(p.name)?'BACK':'NEW'};
     const dk=(p.kills!=null&&o.kills!=null)?p.kills-o.kills:null;
     const da=(p.arena!=null&&o.arena!=null)?p.arena-o.arena:null;
     const dp=(p.power!=null&&o.power!=null)?p.power-o.power:null;
-    return {p,dk,da,dp,prevVS:o.vs};
+    return {p,dk,da,dp,prevVS:o.vs,status:back?'BACK':undefined};
   });
   const war=isWarDay();
   const medK=median(out.filter(x=>x.dk!=null&&x.dk>0).map(x=>x.dk))||0;
@@ -789,17 +795,17 @@ function deltas(){
       x.status = onPace ? (grew?'STRONG':'ON PACE') : (grew?'GROWING':'STALLED');
     }
   });
-  const cur=new Set(CUR.map(p=>p.name));
+  const cur=new Set(CUR.map(p=>p.name)); CUR.forEach(p=>{ const rn=renamedFrom(p); if(rn) cur.add(rn); });
   const outN=new Set(OUT.map(p=>p.name));
   PREV.filter(o=>!cur.has(o.name)).forEach(o=>out.push({p:o,status:outN.has(o.name)?'OUT':'LEFT'}));
   return out;
 }
-const STATUS_CLS={STRONG:'g','ON PACE':'g',GROWING:'y',STALLED:'x',WAR:'g',FOUGHT:'g','NO FIGHT':'y',FROZEN:'x',NEW:'n',LEFT:'m',OUT:'m'};
+const STATUS_CLS={STRONG:'g','ON PACE':'g',GROWING:'y',STALLED:'x',WAR:'g',FOUGHT:'g','NO FIGHT':'y',FROZEN:'x',NEW:'n',BACK:'y',LEFT:'m',OUT:'m'};
 function renderDelta(){
   if(!PREV){ $('#deltaBox').innerHTML=`<div class="empty">No previous capture loaded yet.<br>Add the previous tab name in <b>Setup</b> — this view fills in automatically.</div>`; return; }
   const war=isWarDay();
   const d=deltas().sort(war?((a,b)=>(b.dk??-1e15)-(a.dk??-1e15)):((a,b)=>(b.dp??-1e15)-(a.dp??-1e15)));
-  const order = war ? ['WAR','FOUGHT','NO FIGHT','FROZEN','NEW','OUT','LEFT'] : ['STRONG','ON PACE','GROWING','STALLED','FROZEN','NEW','OUT','LEFT'];
+  const order = war ? ['WAR','FOUGHT','NO FIGHT','FROZEN','BACK','NEW','OUT','LEFT'] : ['STRONG','ON PACE','GROWING','STALLED','FROZEN','BACK','NEW','OUT','LEFT'];
   const count=s=>d.filter(x=>x.status===s).length;
   const totP=d.reduce((a,x)=>a+(x.dp>0?x.dp:0),0);
   const pc=s=>CUR.filter(p=>combatProfile(p)===s).length;
