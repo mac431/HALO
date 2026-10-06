@@ -225,6 +225,11 @@ svg text{font-family:'Roboto Condensed',sans-serif}
 <!-- RANKS -->
 <section class="view" id="v-ranks">
   <div class="card">
+    <h2>Server 727 · Top 10 Arena</h2>
+    <p class="how">Sum of each alliance's 10 strongest Arena Power. HALO uses today's capture; the other alliances come from the server snapshot (update SERVER_T10 when a new one comes out).</p>
+    <div id="srvBox"></div>
+  </div>
+  <div class="card">
     <h2>Rank suggestions</h2>
     <p class="how">Each player vs. the median of their own rank. Suggestions only — command decides.</p>
     <div id="rankBox"></div>
@@ -695,7 +700,7 @@ function renderAll(){
   const age = DATA_DATE ? Math.round((today-DATA_DATE)/864e5) : null;
   const st=$('#stale');
   if(age>=1){ st.style.display=''; st.innerHTML=`⚠️ <b>Data is ${age} day${age>1?'s':''} old</b> — last capture ${dstr}. "Seen" times and VS pace are as of that capture, not today.`; } else st.style.display='none';
-  renderSummary(); renderWeek(); renderDelta(); renderDaily(); renderCanyon(); renderSvS(); renderEvents(); renderActivity(); renderRanks(); renderCharts(); renderProfile(); fillCfg();
+  renderSummary(); renderWeek(); renderDelta(); renderDaily(); renderCanyon(); renderSvS(); renderEvents(); renderActivity(); renderRanks(); renderServer(); renderCharts(); renderProfile(); fillCfg();
 }
 
 function below(){ return active().filter(p=>(p.vs||0)<target()).sort((a,b)=>(a.vs||0)-(b.vs||0)); }
@@ -891,6 +896,43 @@ function renderActivity(){
   $('#activityBox').innerHTML=html;
 }
 
+/* ===================== SERVER 727 · TOP 10 ARENA ===================== */
+const SERVER_T10 = { date:'server snapshot · Oct 2026', alliances:[
+  {tag:'FJI',  total:1055.6, top:[267.9,104.0,95.8,93.5,90.8,86.0,85.0,81.3,76.0,75.3]},
+  {tag:'KOKP', total:1041.2, top:[232.4,111.2,107.3,94.9,94.4,84.7,83.3,80.3,77.5,75.2]},
+  {tag:'LUMO', total:980.4,  top:[204.8,113.4,109.2,99.9,77.8,77.6,75.8,74.7,74.3,72.9]},
+  {tag:'SIAM', total:841.0,  top:[132.0,130.9,90.3,80.4,80.1,70.7,70.4,69.2,63.2,53.8]},
+  {tag:'HALO', total:755.6,  top:[167.1,96.3,82.2,65.8,61.2,58.1,58.1,56.2,55.6,55.0], us:true},
+  {tag:'SyN',  total:697.7,  top:[90.7,87.2,79.6,77.1,76.5,75.5,65.3,49.9,48.6,47.3]},
+  {tag:'V727', total:639.5,  top:[87.8,72.0,70.9,63.9,63.7,59.4,59.0,54.6,54.3,53.9]},
+  {tag:'Korz', total:537.2,  top:[86.8,64.4,56.1,54.0,50.5,49.1,47.8,44.2,42.5,41.8]},
+  {tag:'M4s',  total:502.7,  top:[70.6,57.4,50.5,48.9,48.5,46.6,46.0,45.7,45.3,43.2]},
+  {tag:'RzE',  total:440.5,  top:[69.1,64.9,46.8,42.9,40.5,36.8,36.8,34.5,34.5,32.6]} ]};
+function renderServer(){
+  const box=$('#srvBox'); if(!box) return;
+  const ours=CUR.filter(p=>!p.out&&p.arena>0).sort((a,b)=>b.arena-a.arena);
+  if(ours.length<10){ box.innerHTML='<div class="empty">No Arena Power in this capture.</div>'; return; }
+  const t10=ours.slice(0,10), vals=t10.map(p=>p.arena/1e6), tot=vals.reduce((a,b)=>a+b,0);
+  const snap=SERVER_T10.alliances.find(a=>a.us);
+  const rows=SERVER_T10.alliances.map(a=>a.us?{...a,total:tot,top:vals,live:true}:a).sort((a,b)=>b.total-a.total);
+  const pos=rows.findIndex(a=>a.us), above=rows[pos-1], below=rows[pos+1];
+  const avg29=t=>t.slice(1).reduce((a,b)=>a+b,0)/9, f=v=>v.toFixed(1)+'M', sg=v=>(v>=0?'+':'')+v.toFixed(1)+'M';
+  let h=`<div class="kpis"><div class="kpi"><b>#${pos+1} / ${rows.length}</b><span>server rank</span></div><div class="kpi"><b>${f(tot)}</b><span>our top 10 (${sg(tot-snap.total)} vs snapshot)</span></div>`+
+    (above?`<div class="kpi"><b>${f(above.total-tot)}</b><span>behind ${above.tag}</span></div>`:'')+(below?`<div class="kpi"><b>${f(tot-below.total)}</b><span>ahead of ${below.tag}</span></div>`:'')+`</div>`;
+  const mx=rows[0].total;
+  h+=`<div class="tablewrap"><table class="cmp"><tr><th>#</th><th>Alliance</th><th class="r">Top 10</th><th class="r">#1</th><th class="r">Avg #2–10</th><th class="r">#10</th><th class="r">≥80M</th></tr>`+
+    rows.map((a,i)=>`<tr${a.us?' style="background:rgba(163,39,52,.25);font-weight:600"':''}><td>${i+1}</td><td>${a.tag}${a.live?' <span class="pill g">live</span>':''}<div class="bar" style="margin:3px 0 0;height:5px"><i style="width:${(a.total/mx*100).toFixed(0)}%;background:${a.us?'var(--red2)':'#6a6a72'}"></i></div></td><td class="r">${f(a.total)}</td><td class="r">${f(a.top[0])}</td><td class="r">${f(avg29(a.top))}</td><td class="r">${f(a.top[9])}</td><td class="r">${a.top.filter(v=>v>=80).length}</td></tr>`).join('')+`</table></div>`;
+  if(above){
+    const gap=above.total-tot;
+    h+=`<div class="sec" style="margin-top:12px">SLOT BY SLOT vs ${above.tag} · gap ${f(gap)} → +${f(gap/10)} per player</div><table class="cmp"><tr><th>Slot</th><th>HALO</th><th class="r">Ours</th><th class="r">${above.tag}</th><th class="r">Diff</th></tr>`+
+      t10.map((p,i)=>{ const d=vals[i]-above.top[i]; return `<tr><td>${i+1}</td><td>${esc(p.name)}</td><td class="r">${f(vals[i])}</td><td class="r">${f(above.top[i])}</td><td class="r ${d>=0?'up':'dn'}">${sg(d)}</td></tr>`; }).join('')+`</table>`;
+  }
+  const bench=ours.slice(10,16);
+  if(bench.length) h+=`<div class="sec" style="margin-top:12px">NEXT IN LINE · Arena needed to enter our top 10 (${f(vals[9])})</div><div class="chips">${bench.map(p=>`<span class="chip">${esc(p.name)} ${f(p.arena/1e6)} · ${sg(p.arena/1e6-vals[9])}</span>`).join('')}</div>`;
+  const deep=SERVER_T10.alliances.filter(a=>!a.us).map(a=>avg29(a.top)), us29=avg29(vals);
+  h+=`<p class="how" style="margin-top:10px">Depth: our #2–10 average is ${f(us29)}; ${deep.filter(v=>v>us29).length} of ${deep.length} alliances are deeper. Gaining ${f(above?(above.total-tot)/7:0)} each on slots 4–10 closes the gap to ${above?above.tag:'—'}. ${SERVER_T10.date}.</p>`;
+  box.innerHTML=h;
+}
 function renderRanks(){
   const order=['R1','R2','R3','R4','R5'];
   const med={}; order.forEach(r=>med[r]=median(CUR.filter(p=>p.rank===r&&!p.isNew&&!p.out).map(p=>p.vs)));
