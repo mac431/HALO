@@ -48,6 +48,7 @@ td.r,th.r{text-align:right}
 .g{background:#1f3a2a;color:#7fdca2}.y{background:#3a2f18;color:var(--amber)}.x{background:#3d1a1f;color:#ff8a95}.n{background:#23303d;color:#8fc3ff}.m{background:#2a2a2e;color:var(--mut)}
 .days{display:flex;gap:3px}.d{width:16px;height:16px;border-radius:3px}
 .d.ok{background:var(--green)}.d.lo{background:var(--red2)}.d.na{background:#2a2a2e;border:1px dashed #555}
+.d.pend{background:var(--amber);opacity:.6}
 .d.est{background-image:repeating-linear-gradient(45deg,#0006 0 3px,transparent 3px 6px)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}.chip{background:#1c1c1f;border:1px solid var(--edge);border-radius:14px;padding:4px 10px;font-size:12px}
 .up{color:#7fdca2}.dn{color:#ff8a95}
@@ -865,17 +866,33 @@ function renderSvS(){
   <div class="hbars">${top.map((p,i)=>`<div class="hb" onclick="openPlayer(${CUR.indexOf(p)})"><span class="rk">${i+1}</span><span class="nm">${esc(p.name)}${p.out?' (out)':''}</span><span class="tr"><span class="fl" style="width:${Math.max(.5,p.svs/max*100)}%;background:var(--red)"></span><span class="vl" style="left:${Math.min(80,p.svs/max*100)}%;margin-left:4px">${fmtM(p.svs)}${dk[p.name]>0?' · +'+fmtM(dk[p.name])+' kills':''}</span></span></div>`).join('')}</div>`;
 }
 
+let dSort='worst';
+function dayState(p,i){ const v=p.days[i];
+  if(i>=DAY||v==null) return 'na';
+  if(v>=DAILY_MIN) return 'ok';
+  return (!FINAL&&i===DAY-1)?'pend':'lo'; }
+function dayScore(p){ let ok=0,of=0; for(let i=0;i<DAY;i++){ const s=dayState(p,i); if(s==='ok'){ok++;of++;} else if(s==='lo') of++; } return {ok,of}; }
 function renderDaily(){
-  const has=CUR.some(p=>p.days.some(v=>v!=null));
+  const list=CUR.filter(p=>!p.out);
+  const has=list.some(p=>p.days.some(v=>v!=null));
   if(!has){ $('#dailyBox').innerHTML=`<div class="empty">No daily VS in this capture yet.<br>Next capture will include VS_Mon … VS_Sat.</div>`; return; }
-  const upto=DAY;
-  const rows=CUR.map(p=>{ const ok=p.days.slice(0,upto).filter(v=>v!=null&&v>=DAILY_MIN).length; return {p,ok}; }).sort((a,b)=>a.ok-b.ok||(a.p.vs||0)-(b.p.vs||0));
-  const dayTot=DAY_KEYS.map((_,i)=>CUR.reduce((a,p)=>a+(p.days[i]||0),0));
-  const lbl=['Mon','Tue','Wed','Thu','Fri','Sat'];
-  $('#dailyBox').innerHTML = `<div class="chips" style="margin-bottom:10px">${lbl.slice(0,upto).map((l,i)=>`<span class="chip">${l}: ${fmtM(dayTot[i])}${EST.has(i)?'*':''}</span>`).join('')}</div>
+  const upto=DAY, lbl=['Mon','Tue','Wed','Thu','Fri','Sat'];
+  const RO={R5:5,R4:4,R3:3,R2:2,R1:1};
+  const rows=list.map(p=>({p,...dayScore(p)}));
+  const ratio=x=>x.of?x.ok/x.of:1;
+  const S={worst:(a,b)=>ratio(a)-ratio(b)||(a.p.vs||0)-(b.p.vs||0), best:(a,b)=>ratio(b)-ratio(a)||(b.p.vs||0)-(a.p.vs||0),
+    az:(a,b)=>a.p.name.localeCompare(b.p.name,undefined,{sensitivity:'base'}), vs:(a,b)=>(b.p.vs||0)-(a.p.vs||0),
+    rank:(a,b)=>(RO[b.p.rank]||0)-(RO[a.p.rank]||0)||a.p.name.localeCompare(b.p.name,undefined,{sensitivity:'base'})};
+  rows.sort(S[dSort]||S.worst);
+  const dayTot=DAY_KEYS.map((_,i)=>list.reduce((a,p)=>a+(p.days[i]||0),0));
+  const opts=[['worst','Worst first'],['best','Best first'],['az','A–Z'],['vs','Week VS'],['rank','Rank']];
+  const pend=!FINAL&&upto>0;
+  $('#dailyBox').innerHTML = `<div class="chips" style="margin-bottom:8px">${lbl.slice(0,upto).map((l,i)=>`<span class="chip">${l}: ${fmtM(dayTot[i])}${EST.has(i)?'*':''}${pend&&i===upto-1?' (so far)':''}</span>`).join('')}</div>
+  <div class="chips" style="margin-bottom:10px">${opts.map(([k,l])=>`<button class="mchip ${k===dSort?'on':''}" onclick="dSort='${k}';renderDaily()">${l}</button>`).join('')}</div>
+  ${pend?`<p class="how">Amber = today, still in progress (not counted until the day closes).</p>`:''}
   ${EST.size?`<p class="how">* Striped days are <b>estimates</b>: the week total minus the known days, split evenly. Real daily values fill in from each new capture.</p>`:''}
   <div class="tablewrap"><table><tr><th>Player</th><th>${lbl.map(l=>l[0]).join(' ')}</th><th class="r">Days OK</th></tr>
-  ${rows.map(({p,ok})=>`<tr><td>${esc(p.name)}</td><td><div class="days">${p.days.map((v,i)=>`<span class="d ${i>=upto||v==null?'na':v>=DAILY_MIN?'ok':'lo'}${EST.has(i)&&i<upto?' est':''}" title="${lbl[i]} ${fmtM(v)}${EST.has(i)?' (est.)':''}"></span>`).join('')}</div></td><td class="r">${ok}/${upto}</td></tr>`).join('')}
+  ${rows.map(({p,ok,of})=>`<tr><td><a href="#" onclick="openPlayer(${CUR.indexOf(p)});return false" style="color:inherit">${esc(p.name)}</a>${p.isNew?' <span class="pill n">NEW</span>':''}</td><td><div class="days">${p.days.map((v,i)=>`<span class="d ${dayState(p,i)}${EST.has(i)&&i<upto?' est':''}" title="${lbl[i]} ${fmtM(v)}${EST.has(i)?' (est.)':''}"></span>`).join('')}</div></td><td class="r">${ok}/${of}</td></tr>`).join('')}
   </table></div>`;
 }
 
@@ -1107,7 +1124,8 @@ function renderProfile(){
   if(PREV){ const d=deltas().find(x=>x.p.name===p.name); if(d&&d.status!=='NEW') deltaHTML=`<div class="sec">SINCE LAST CAPTURE</div><table class="cmp"><tr><td>+Kills</td><td class="r ${d.dk>0?'up':''}">${sgn(d.dk)}</td><td>+Arena</td><td class="r ${d.da>0?'up':d.da<0?'dn':''}">${sgn(d.da)}</td></tr><tr><td>+Power</td><td class="r ${d.dp>0?'up':d.dp<0?'dn':''}">${sgn(d.dp)}</td><td>Prev VS</td><td class="r">${fmtM(d.prevVS)}</td></tr></table><div style="margin-top:4px"><span class="pill ${STATUS_CLS[d.status]}">${d.status}</span></div>`; }
   const hasDaily=p.days.some(v=>v!=null);
   const lbl=['Mon','Tue','Wed','Thu','Fri','Sat'];
-  const dailyHTML = hasDaily ? `<div class="sec">DAILY VS</div><table class="cmp"><tr>${lbl.map(l=>`<td style="text-align:center;color:var(--mut)">${l}</td>`).join('')}</tr><tr>${p.days.map((v,i)=>`<td style="text-align:center" class="${v==null?'':v>=DAILY_MIN?'up':'dn'}">${i<DAY?fmtM(v)+(EST.has(i)?'*':''):'·'}</td>`).join('')}</tr></table>` : '';
+  const dsc=dayScore(p), dRank=(()=>{ const L=CUR.filter(x=>!x.out&&!x.isNew).map(x=>({x,...dayScore(x)})).map(o=>({n:o.x.name,r:o.of?o.ok/o.of:1,vs:o.x.vs||0})).sort((a,b)=>b.r-a.r||b.vs-a.vs); const i=L.findIndex(o=>o.n===p.name); return i<0?null:{pos:i+1,of:L.length}; })();
+  const dailyHTML = hasDaily ? `<div class="sec">DAILY VS CONSISTENCY · ${dsc.ok}/${dsc.of} days ≥ ${fmtM(DAILY_MIN)}${dRank?' · #'+dRank.pos+' of '+dRank.of:''}</div><table class="cmp"><tr>${lbl.map(l=>`<td style="text-align:center;color:var(--mut)">${l}</td>`).join('')}</tr><tr>${p.days.map((v,i)=>`<td style="text-align:center"><span class="d ${dayState(p,i)}${EST.has(i)&&i<DAY?' est':''}" style="display:inline-block"></span></td>`).join('')}</tr><tr>${p.days.map((v,i)=>`<td style="text-align:center;font-size:12px" class="${dayState(p,i)==='ok'?'up':dayState(p,i)==='lo'?'dn':''}">${i<DAY?fmtM(v)+(EST.has(i)?'*':''):'·'}</td>`).join('')}</tr></table>` : '';
   const cst=canyonStatus(p), cr=eventRank(p,'canyonS'), sr=eventRank(p,'svs');
   const eventsHTML = (cst||p.svs!=null) ? `<div class="sec">EVENTS</div><table class="cmp">
     ${cst?`<tr><td>🏜️ Canyon${p.canyonT?' · '+esc(p.canyonT):''}</td><td><span class="pill ${cst[1]}">${cst[0]}</span></td><td class="r"><b>${(p.canyonS||0)>0?fmtM(p.canyonS):'0'}</b></td><td class="r">${cr?'#'+cr.pos+' of '+cr.of:'—'}</td></tr>`:''}
