@@ -9,7 +9,7 @@
 :root{--bg:#141416;--panel:#232327;--panel2:#2c2c31;--edge:#3a3a40;--red:#A32734;--red2:#c93a48;--pink:#F2A3B3;--gold:#d9a93a;--green:#3fae6a;--amber:#e0a02f;--txt:#ecebe8;--mut:#9a9aa2}
 *{box-sizing:border-box}
 body{margin:0;color:var(--txt);font-family:'Roboto Condensed',sans-serif;background:radial-gradient(ellipse 900px 380px at 50% -80px,#5a141d 0%,#2a0f13 45%,var(--bg) 75%) no-repeat,var(--bg)}
-.wrap{max-width:760px;margin:0 auto;padding:16px 16px 90px}
+.wrap{max-width:760px;margin:0 auto;padding:16px 16px 130px}
 header{display:flex;gap:14px;align-items:center;margin:4px 0 6px}
 header .banner{flex:none;width:74px;filter:drop-shadow(0 4px 6px #000a)}
 header .tag{font-family:Oswald;font-size:12px;letter-spacing:3px;color:var(--pink)}
@@ -61,10 +61,10 @@ label{font-size:12px;color:var(--mut);display:block;margin:10px 0 4px}
 .btn.ghost{background:#1c1c1f;border:1px solid var(--edge);color:var(--txt)}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .sec{font-size:12px;color:var(--mut);margin:12px 0 6px;letter-spacing:.5px}
-nav{position:fixed;bottom:0;left:0;right:0;background:#0e0e10;border-top:2px solid var(--red);display:flex;justify-content:flex-start;gap:2px;padding:6px 4px;overflow-x:auto;z-index:100}
-nav button:first-child{margin-left:auto}nav button:last-child{margin-right:auto}
+nav{position:fixed;bottom:0;left:0;right:0;background:#0e0e10;border-top:2px solid var(--red);display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:6px 6px calc(6px + env(safe-area-inset-bottom));z-index:100;touch-action:manipulation}
+@media (min-width:760px){nav{grid-template-columns:repeat(10,auto);justify-content:center}}
 nav::-webkit-scrollbar{display:none}
-nav button{font-family:Oswald;font-size:12px;padding:8px 9px;border-radius:6px;color:var(--mut);background:none;border:0;cursor:pointer;white-space:nowrap}
+nav button{font-family:Oswald;font-size:12px;padding:10px 4px;min-height:40px;border-radius:6px;color:var(--mut);background:#1a1a1d;border:0;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 nav button.on{background:var(--red);color:#fff}
 .view{display:none}.view.on{display:block}
 
@@ -381,14 +381,14 @@ body.s2 #snow{display:block}
 <canvas id="snow" aria-hidden="true"></canvas>
 <nav id="nav">
   <button class="on" data-v="summary">SUMMARY</button>
-  <button data-v="week">THIS WEEK</button>
+  <button data-v="week">WEEK</button>
   <button data-v="charts">CHARTS</button>
   <button data-v="player">PLAYER</button>
   <button data-v="delta">PROGRESS</button>
   <button data-v="events">EVENTS</button>
   <button data-v="activity">ACTIVITY</button>
   <button data-v="ranks">RANKS</button>
-  <button data-v="s2">❄ SEASON 2</button>
+  <button data-v="s2">❄ S2</button>
   <button data-v="setup">SETUP</button>
 </nav>
 <div class="toast" id="toast"></div>
