@@ -47,6 +47,8 @@ td.r,th.r{text-align:right}
 .pill{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;white-space:nowrap}
 .g{background:#1f3a2a;color:#7fdca2}.y{background:#3a2f18;color:var(--amber)}.x{background:#3d1a1f;color:#ff8a95}.n{background:#23303d;color:#8fc3ff}.m{background:#2a2a2e;color:var(--mut)}
 .days{display:flex;gap:3px}.d{width:16px;height:16px;border-radius:3px}
+.days.v .d{width:25px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:#fff;font-family:Oswald;letter-spacing:0}
+.days.v .d.na{color:#777}.days.h span{width:25px;text-align:center;font-size:10px;color:var(--mut)}
 .d.ok{background:var(--green)}.d.lo{background:var(--red2)}.d.na{background:#2a2a2e;border:1px dashed #555}
 .d.pend{background:var(--amber);opacity:.6}
 .d.est{background-image:repeating-linear-gradient(45deg,#0006 0 3px,transparent 3px 6px)}
@@ -119,6 +121,45 @@ svg text{font-family:'Roboto Condensed',sans-serif}
 #weekTable td:first-child{box-shadow:none}
 .toast{z-index:101;position:fixed;bottom:64px;left:50%;transform:translateX(-50%);background:#2f6b45;color:#fff;padding:8px 14px;border-radius:6px;font-size:13px;opacity:0;transition:.3s;pointer-events:none}
 .toast.on{opacity:1}
+
+/* ===== SEASON 2 · EVERFROST theme (only while the S2 tab is open) ===== */
+body.s2{--bg:#081321;--panel:#10233a;--panel2:#16304d;--edge:#284b70;--txt:#eaf4fc;--mut:#8db0cc;--ice:#8fd3ff;--ice2:#3f9be0;--frost:#cfefff;
+  background:radial-gradient(ellipse 1000px 420px at 50% -90px,#245a8a 0%,#10304f 42%,var(--bg) 78%) no-repeat,var(--bg);transition:background .4s}
+body.s2 header h1{text-shadow:0 0 18px rgba(143,211,255,.45)}
+body.s2 header .tag{color:var(--ice)}
+body.s2 .divider{background:linear-gradient(90deg,var(--red),var(--ice) 45%,transparent)}
+body.s2 .card{background:linear-gradient(180deg,rgba(143,211,255,.06),transparent 60%),var(--panel);border-color:var(--edge)}
+body.s2 .card h2{border-left-color:var(--ice)}
+body.s2 nav{border-top-color:var(--ice2);background:#06101c}
+body.s2 nav button.on{background:linear-gradient(180deg,#3f9be0,#1f5f99);box-shadow:inset 0 -2px 0 var(--red2)}
+body.s2 .chip,body.s2 .mchip{background:#0c1c2e;border-color:var(--edge)}
+body.s2 .spot input{background:#0c1c2e;border-color:var(--edge)}
+#snow{position:fixed;inset:0;pointer-events:none;z-index:0;display:none}
+body.s2 #snow{display:block}
+.wrap{position:relative;z-index:1}
+.s2hero{position:relative;overflow:hidden}
+.s2hero .flake{position:absolute;right:-18px;top:-22px;font-size:110px;opacity:.09;line-height:1}
+.s2hero .big{font-family:Oswald;font-size:30px;letter-spacing:2px;line-height:1.05}
+.s2hero .big small{font-size:14px;color:var(--ice);letter-spacing:3px;display:block}
+.s2track{height:12px;border-radius:6px;background:#0a1828;border:1px solid var(--edge);overflow:hidden;margin:10px 0 4px;position:relative}
+.s2track i{display:block;height:100%;background:linear-gradient(90deg,var(--ice2),var(--ice),#fff)}
+.s2track b{position:absolute;top:-2px;bottom:-2px;width:0;border-left:2px solid rgba(255,255,255,.35)}
+.s2wk{display:flex;justify-content:space-between;font-size:10px;color:var(--mut);margin-top:2px}
+.lvl{display:inline-block;min-width:26px;text-align:center;font-family:Oswald;font-size:13px;padding:2px 4px;border-radius:4px}
+.s2grid td.c{text-align:center;padding:3px 2px}
+.s2grid td.c span{display:inline-block;min-width:24px;border-radius:4px;padding:2px 3px;font-size:12px}
+.s2gain{color:#7fe0a8;font-weight:700}
+.ladder{display:grid;gap:8px}
+.ladder .rung{display:grid;grid-template-columns:62px 1fr 64px;gap:8px;align-items:center;font-size:13px}
+.ladder .rung .t{height:12px;border-radius:6px;background:#0a1828;border:1px solid var(--edge);overflow:hidden}
+.ladder .rung .t i{display:block;height:100%;background:linear-gradient(90deg,var(--ice2),var(--ice))}
+.ladder .rung b{font-family:Oswald}
+.ladder .rung small{color:var(--mut);display:block;font-size:11px}
+.dist{display:flex;align-items:flex-end;gap:3px;height:120px;padding-top:8px}
+.dist div{flex:1;background:linear-gradient(180deg,var(--ice),var(--ice2));border-radius:3px 3px 0 0;position:relative;min-height:2px}
+.dist div span{position:absolute;bottom:-16px;left:0;right:0;text-align:center;font-size:10px;color:var(--mut)}
+.dist div em{position:absolute;top:-15px;left:0;right:0;text-align:center;font-size:10px;font-style:normal}
+@media (prefers-reduced-motion:reduce){#snow{display:none!important}}
 </style>
 </head>
 <body>
@@ -316,6 +357,28 @@ svg text{font-family:'Roboto Condensed',sans-serif}
 </section>
 </div>
 
+
+<!-- SEASON 2 · EVERFROST -->
+<section class="view" id="v-s2">
+  <div class="card s2hero">
+    <div class="flake">❄</div>
+    <div class="big"><small>SEASON 2</small>EVERFROST</div>
+    <p class="how" style="margin-top:4px">Bio Lab progression of every HALO member, week by week. Bio Lab = virus resistance = how hard we hit the Yeti, Frostbanes and the season monsters.</p>
+    <div id="s2clock"></div>
+  </div>
+  <div class="kpis" id="s2kpis"></div>
+  <div class="card"><h2>Milestones</h2><p class="how">How many members have reached each Bio Lab level that matters.</p><div class="ladder" id="s2ladder"></div></div>
+  <div class="card"><h2>Alliance trend</h2><p class="how">Median and top-10 average Bio Lab per season week.</p><div id="s2trend"></div></div>
+  <div class="card"><h2>Where we are</h2><p class="how">Members per Bio Lab level (latest scan).</p><div id="s2dist"></div></div>
+  <div class="card">
+    <h2>Progress by week</h2>
+    <p class="how">Latest Bio Lab level seen each season week. Tap a column title to sort.</p>
+    <div class="tablewrap" style="margin-top:6px"><table class="s2grid" id="s2table"></table></div>
+  </div>
+  <div class="card"><h2>Not scanned yet</h2><div id="s2missing"></div></div>
+</section>
+
+<canvas id="snow" aria-hidden="true"></canvas>
 <nav id="nav">
   <button class="on" data-v="summary">SUMMARY</button>
   <button data-v="week">THIS WEEK</button>
@@ -325,6 +388,7 @@ svg text{font-family:'Roboto Condensed',sans-serif}
   <button data-v="events">EVENTS</button>
   <button data-v="activity">ACTIVITY</button>
   <button data-v="ranks">RANKS</button>
+  <button data-v="s2">❄ SEASON 2</button>
   <button data-v="setup">SETUP</button>
 </nav>
 <div class="toast" id="toast"></div>
@@ -338,7 +402,8 @@ const DEFAULTS = {
   prev:  SHEET_PUB + '?gid=1668247934&single=true&output=csv',  // ANTERIOR (published CSV)
   alias: '',
   hist:  '',
-  canyon: SHEET_PUB + '?gid=175749519&single=true&output=csv'   // CANYON history tab
+  canyon: SHEET_PUB + '?gid=175749519&single=true&output=csv',  // CANYON history tab
+  s2:    SHEET_PUB + '?gid=655500836&single=true&output=csv'   // S2 tab: Jugador,Fecha,BioLab,Resistencia,Greenhouses,Notas
 };
 const DAILY_GUIDE = [2.2e6,2.2e6,2.2e6,6e6,2.2e6,6e6]; // Mon–Sat guide: 2.2M/day, Thu & Sat 6M
 const WEEKLY_MIN  = 20e6;   // weekly VS minimum — days can compensate each other
@@ -677,7 +742,7 @@ async function loadAll(){
   FINAL = DAY===VS_DAYS;
   $('#src').className='src '+cls;
   $('#src').textContent = `Source: ${SOURCE} · ${CUR.length} players` + (PREV?` · previous: ${PREV.length}`:'') + (notes.length?' · '+notes.join(' · '):'');
-  renderAll();
+  renderAll(); if(typeof renderS2==='function') renderS2();
 }
 
 /* ============================ METRICS ============================ */
@@ -899,12 +964,13 @@ function renderDaily(){
   const dayTot=DAY_KEYS.map((_,i)=>list.reduce((a,p)=>a+(p.days[i]||0),0));
   const opts=[['worst','Worst first'],['best','Best first'],['az','A–Z'],['vs','Week VS'],['rank','Rank']];
   const pend=!FINAL&&upto>0;
+  const dv=v=>v==null?'':v<=0?'0':v<1e5?'·':(v/1e6>=10?Math.round(v/1e6):(v/1e6).toFixed(1));
   $('#dailyBox').innerHTML = `<div class="chips" style="margin-bottom:8px">${lbl.slice(0,upto).map((l,i)=>`<span class="chip">${l}: ${fmtM(dayTot[i])}${EST.has(i)?'*':''}${pend&&i===upto-1?' (so far)':''}</span>`).join('')}</div>
   <div class="chips" style="margin-bottom:10px">${opts.map(([k,l])=>`<button class="mchip ${k===dSort?'on':''}" onclick="dSort='${k}';renderDaily()">${l}</button>`).join('')}</div>
   ${pend?`<p class="how">Amber = today, still in progress (not counted until the day closes).</p>`:''}
   ${EST.size?`<p class="how">* Striped days are <b>estimates</b>: the week total minus the known days, split evenly. Real daily values fill in from each new capture.</p>`:''}
-  <div class="tablewrap"><table><tr><th>Player</th><th>${lbl.map(l=>l[0]).join(' ')}</th><th class="r">Days OK</th></tr>
-  ${rows.map(({p,ok,of})=>`<tr><td><a href="#" onclick="openPlayer(${CUR.indexOf(p)});return false" style="color:inherit">${esc(p.name)}</a>${p.isNew?' <span class="pill n">NEW</span>':''}</td><td><div class="days">${p.days.map((v,i)=>`<span class="d ${dayState(p,i)}${EST.has(i)&&i<upto?' est':''}" title="${lbl[i]} ${fmtM(v)}${EST.has(i)?' (est.)':''}"></span>`).join('')}</div></td><td class="r">${ok}/${of}</td></tr>`).join('')}
+  <div class="tablewrap"><table><tr><th>Player</th><th><div class="days h">${lbl.map(l=>`<span>${l.slice(0,2)}</span>`).join('')}</div></th><th class="r">Week</th></tr>
+  ${rows.map(({p,ok,of})=>`<tr><td style="max-width:118px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><a href="#" onclick="openPlayer(${CUR.indexOf(p)});return false" style="color:inherit">${esc(p.name)}</a>${p.isNew?' <span class="pill n">NEW</span>':''}</td><td><div class="days v">${p.days.map((v,i)=>`<span class="d ${dayState(p,i)}${EST.has(i)&&i<upto?' est':''}" title="${lbl[i]} ${fmtM(v)}${EST.has(i)?' (est.)':''}">${i<upto?dv(v):''}</span>`).join('')}</div></td><td class="r" style="line-height:1.1"><b style="color:${(p.vs||0)>=WEEKLY_MIN?'#7fdca2':'#ff8a95'}">${fmtM(p.vs)}</b><br><small style="color:var(--mut)">${ok}/${of} days</small></td></tr>`).join('')}
   </table></div>`;
 }
 
@@ -1338,6 +1404,82 @@ function copyShoutout(){
   copy(`[HALO] Shoutout 🏆 Top VS ${FINAL?'this week':'so far'}: ${top.map((p,i)=>`${i+1}. ${p.name}`).join(' · ')}. Great work!`);
 }
 
+
+/* ============================ SEASON 2 · EVERFROST ============================ */
+const S2_START = new Date(2026,9,9);   // season day 1 (75 days → ends 22 Dec 2026)
+const S2_DAYS  = 75;
+const S2_WEEKS = Math.ceil(S2_DAYS/7);
+const S2_MILESTONES = [
+  [9,  'Early season base'],
+  [12, 'Clash for Glory checklist'],
+  [20, 'Mid-season'],
+  [26, 'Frostbanes Lv60'],
+  [30, 'Max Bio Lab']
+];
+const S2_LOCAL = `Jugador,Fecha,BioLab,Resistencia,Greenhouses,Notas`;
+let S2=[], S2SORT='now';
+const s2day = d => Math.floor((new Date(d.getFullYear(),d.getMonth(),d.getDate()) - S2_START)/864e5)+1;
+const s2week = d => Math.min(S2_WEEKS, Math.max(1, Math.ceil(s2day(d)/7)));
+function s2date(v){ if(!v) return null; const m=String(v).match(/(\d{4})[-./](\d{1,2})[-./](\d{1,2})/); if(m) return new Date(+m[1],m[2]-1,+m[3]); const n=String(v).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(n) return new Date(+n[3],n[1]-1,+n[2]); return null; }
+function lvlColor(l){ if(l==null) return 'background:#0a1828;color:#4f6f8a'; const t=Math.min(1,l/30); const h=205-t*15, li=22+t*48; return `background:hsl(${h},70%,${li}%);color:${li>55?'#06203a':'#eaf4fc'}`; }
+async function loadS2(){
+  let rows=null;
+  try{ rows = MANUAL.s2 || await fetchCSV(CFG.s2||DEFAULTS.s2); }catch(e){}
+  if(!rows||!rows.length) rows=parseCSV(S2_LOCAL);
+  S2 = rows.map(r=>{ const nm=pick(r,['Jugador','Player','Name']); const d=s2date(pick(r,['Fecha','Date'])); const b=num(pick(r,['BioLab','Bio Lab','Nivel'])); if(!nm||!d||b==null) return null;
+    return {name:canon(nm), date:d, wk:s2week(d), bio:b, res:num(pick(r,['Resistencia','Resistance'])), gh:pick(r,['Greenhouses','GH']), note:pick(r,['Notas','Notes'])}; }).filter(Boolean);
+  renderS2();
+}
+function renderS2(){
+  if(!$('#v-s2')) return;
+  const today=new Date(), day=Math.max(1,Math.min(S2_DAYS,s2day(today))), wk=s2week(today), left=S2_DAYS-day;
+  const end=new Date(S2_START.getTime()+ (S2_DAYS-1)*864e5);
+  $('#s2clock').innerHTML = `<div class="row" style="justify-content:space-between;font-size:13px"><span><b style="font-family:Oswald;font-size:18px">Day ${day}</b> / ${S2_DAYS} · Week ${wk} of ${S2_WEEKS}</span><span style="color:var(--mut)">${left} days left · ends ${end.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span></div>
+    <div class="s2track"><i style="width:${(day/S2_DAYS*100).toFixed(1)}%"></i>${Array.from({length:S2_WEEKS-1},(_,i)=>`<b style="left:${((i+1)*7/S2_DAYS*100).toFixed(1)}%"></b>`).join('')}</div>
+    <div class="s2wk">${Array.from({length:S2_WEEKS},(_,i)=>`<span${i+1===wk?' style="color:var(--ice);font-weight:700"':''}>W${i+1}</span>`).join('')}</div>`;
+  // per-player: best level per week
+  const by={};
+  S2.forEach(r=>{ const p=by[r.name]||(by[r.name]={name:r.name,w:{},last:null}); p.w[r.wk]=Math.max(p.w[r.wk]||0,r.bio); if(!p.last||r.date>=p.last.date) p.last=r; });
+  const ps=Object.values(by).map(p=>{ const ws=Object.keys(p.w).map(Number).sort((a,b)=>a-b); const now=p.last.bio; const prevW=ws.filter(w=>w<p.last.wk).pop(); const gain=prevW!=null? now-p.w[prevW] : null; const first=p.w[ws[0]]; return {...p, now, gain, total: now-first, res:p.last.res, seen:p.last.date}; });
+  const roster=(CUR||[]).filter(p=>!p.out);
+  const lv=ps.map(p=>p.now);
+  const lastW = ps.length? Math.max(...ps.map(p=>p.last.wk)) : wk;
+  const gains=ps.map(p=>p.gain).filter(v=>v!=null);
+  const kp=(b,s)=>`<div class="kpi"><b>${b}</b><span>${s}</span></div>`;
+  $('#s2kpis').innerHTML = kp(`${ps.length} / ${roster.length||'—'}`,'members scanned')+kp(lv.length?median(lv):'—','median Bio Lab')+kp(lv.length?Math.max(...lv):'—','highest Bio Lab')+kp(gains.length?'+'+(gains.reduce((a,b)=>a+b,0)/gains.length).toFixed(1):'—','avg levels / week');
+  if(!ps.length){
+    const msg=`<div class="empty">❄ No Bio Lab scan yet.<br>Each week Claude reads every member's Bio Lab on the map and writes it to the <b>S2</b> tab of the sheet<br>(Jugador · Fecha · BioLab · Resistencia). This page fills in by itself.</div>`;
+    ['#s2ladder','#s2trend','#s2dist'].forEach(id=>$(id).innerHTML=msg); $('#s2table').innerHTML=''; 
+    $('#s2missing').innerHTML=`<p class="how">${roster.length} members waiting for their first scan.</p>`; return;
+  }
+  const n=ps.length;
+  $('#s2ladder').innerHTML = S2_MILESTONES.map(([l,t])=>{ const c=ps.filter(p=>p.now>=l).length; return `<div class="rung"><b>Lv ${l}</b><div><div class="t"><i style="width:${(c/n*100).toFixed(0)}%"></i></div><small>${t}</small></div><span style="text-align:right">${c} · ${Math.round(c/n*100)}%</span></div>`; }).join('');
+  // trend
+  const pts=[]; for(let w=1;w<=lastW;w++){ const vals=ps.map(p=>{ const ks=Object.keys(p.w).map(Number).filter(x=>x<=w); return ks.length?p.w[Math.max(...ks)]:null; }).filter(v=>v!=null).sort((a,b)=>b-a); if(vals.length) pts.push({w,med:median(vals),top:vals.slice(0,10).reduce((a,b)=>a+b,0)/Math.min(10,vals.length)}); }
+  const W=620,H=200,P=30, xs=w=>P+(w-1)/(Math.max(1,S2_WEEKS-1))*(W-2*P), ys=v=>H-P-(v/30)*(H-2*P);
+  const line=(k,c)=>`<polyline fill="none" stroke="${c}" stroke-width="2.5" points="${pts.map(p=>xs(p.w)+','+ys(p[k])).join(' ')}"/>`+pts.map(p=>`<circle cx="${xs(p.w)}" cy="${ys(p[k])}" r="3.5" fill="${c}"/>`).join('');
+  $('#s2trend').innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${[0,10,20,30].map(v=>`<line x1="${P}" x2="${W-P}" y1="${ys(v)}" y2="${ys(v)}" stroke="#284b70" stroke-dasharray="3 4"/><text x="4" y="${ys(v)+4}" font-size="11" fill="#8db0cc">${v}</text>`).join('')}${Array.from({length:S2_WEEKS},(_,i)=>`<text x="${xs(i+1)}" y="${H-8}" font-size="10" text-anchor="middle" fill="#8db0cc">W${i+1}</text>`).join('')}${line('top','#cfefff')}${line('med','#3f9be0')}</svg><div class="legend"><span><i style="background:#cfefff"></i>top-10 avg</span><span><i style="background:#3f9be0"></i>median</span></div>`;
+  // distribution
+  const mx=Math.max(...lv), mn=Math.min(...lv), cnt={}; lv.forEach(v=>cnt[v]=(cnt[v]||0)+1); const top=Math.max(...Object.values(cnt));
+  $('#s2dist').innerHTML = `<div class="dist" style="margin-bottom:18px">${Array.from({length:mx-mn+1},(_,i)=>mn+i).map(l=>`<div style="height:${((cnt[l]||0)/top*100).toFixed(0)}%"><em>${cnt[l]||''}</em><span>${l}</span></div>`).join('')}</div>`;
+  // table
+  const sorters={now:(a,b)=>b.now-a.now||a.name.localeCompare(b.name), gain:(a,b)=>(b.gain??-99)-(a.gain??-99), name:(a,b)=>a.name.localeCompare(b.name), res:(a,b)=>(b.res||0)-(a.res||0)};
+  const rows=[...ps].sort(sorters[S2SORT]||sorters.now);
+  const wcols=Array.from({length:lastW},(_,i)=>i+1);
+  $('#s2table').innerHTML = `<tr><th onclick="S2SORT='name';renderS2()">Player</th>${wcols.map(w=>`<th class="r" style="text-align:center">W${w}</th>`).join('')}<th class="r" onclick="S2SORT='now';renderS2()">Now</th><th class="r" onclick="S2SORT='gain';renderS2()">+Week</th><th class="r" onclick="S2SORT='res';renderS2()">Resist.</th></tr>`+
+    rows.map(p=>{ const i=CUR.findIndex(c=>c.name===p.name); return `<tr><td${i>=0?` style="cursor:pointer" onclick="openPlayer(${i})"`:''}>${esc(p.name)}</td>${wcols.map(w=>`<td class="c"><span style="${lvlColor(p.w[w])}">${p.w[w]??'·'}</span></td>`).join('')}<td class="r"><span class="lvl" style="${lvlColor(p.now)}">${p.now}</span></td><td class="r">${p.gain==null?'—':p.gain>0?`<span class="s2gain">+${p.gain}</span>`:p.gain===0?'<span style="color:var(--amber)">0</span>':p.gain}</td><td class="r">${p.res!=null?p.res.toLocaleString():'—'}</td></tr>`; }).join('');
+  const miss=roster.filter(r=>!by[r.name]);
+  $('#s2missing').innerHTML = miss.length? `<p class="how">${miss.length} members without a Bio Lab reading yet.</p><div class="chips">${miss.map(p=>`<span class="chip">${esc(p.name)}</span>`).join('')}</div>` : `<p class="how">Everyone has been scanned ✓</p>`;
+}
+/* snowfall (S2 tab only) */
+(function(){ const c=document.getElementById('snow'); if(!c) return; const x=c.getContext('2d'); let fl=[], on=false, raf=null;
+  function size(){ c.width=innerWidth*devicePixelRatio; c.height=innerHeight*devicePixelRatio; }
+  function seed(){ fl=Array.from({length:Math.round(innerWidth/9)},()=>({x:Math.random()*c.width,y:Math.random()*c.height,r:(Math.random()*1.8+.6)*devicePixelRatio,s:Math.random()*.6+.25,d:Math.random()*Math.PI*2})); }
+  function tick(){ x.clearRect(0,0,c.width,c.height); x.fillStyle='rgba(220,240,255,.75)'; fl.forEach(f=>{ f.y+=f.s*devicePixelRatio; f.d+=.01; f.x+=Math.sin(f.d)*.4*devicePixelRatio; if(f.y>c.height){f.y=-5;f.x=Math.random()*c.width;} x.beginPath(); x.arc(f.x,f.y,f.r,0,Math.PI*2); x.fill(); }); if(on) raf=requestAnimationFrame(tick); }
+  window.s2Snow=v=>{ if(matchMedia('(prefers-reduced-motion: reduce)').matches) v=false; if(v&&!on){ on=true; size(); seed(); tick(); } else if(!v){ on=false; cancelAnimationFrame(raf); x.clearRect(0,0,c.width,c.height);} };
+  addEventListener('resize',()=>{ if(on){ size(); seed(); } });
+})();
+
 /* ============================ SETUP ============================ */
 function fillCfg(){ $('#cfgId').value=CFG.id; $('#cfgLive').value=CFG.live; $('#cfgPrev').value=CFG.prev; $('#cfgAlias').value=CFG.alias; $('#cfgHist').value=CFG.hist; }
 function saveCfg(){ CFG={id:$('#cfgId').value.trim(),live:$('#cfgLive').value.trim(),prev:$('#cfgPrev').value.trim(),alias:$('#cfgAlias').value.trim(),hist:$('#cfgHist').value.trim()}; store('amps_cfg',CFG); toast('Saved'); loadAll(); }
@@ -1348,9 +1490,10 @@ document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+b.dataset.v));
   store('amps_tab',b.dataset.v); window.scrollTo(0,0);
+  const isS2=b.dataset.v==='s2'; document.body.classList.toggle('s2',isS2); window.s2Snow&&s2Snow(isS2); if(isS2) renderS2();
 });
 const lastTab=load('amps_tab'); if(lastTab){ const b=document.querySelector(`#nav button[data-v="${lastTab}"]`); if(b) b.click(); }
-loadAll();
+loadAll().then(loadS2);
 </script>
 </body>
 </html>
