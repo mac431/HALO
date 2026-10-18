@@ -372,7 +372,7 @@ body.s2 #snow{display:block}
   <div class="card"><h2>Where we are</h2><p class="how">Members per Bio Lab level (latest scan).</p><div id="s2dist"></div></div>
   <div class="card">
     <h2>Progress by week</h2>
-    <p class="how">Latest Bio Lab level seen each season week. Tap a column title to sort.</p>
+    <p class="how">Latest Bio Lab level seen each season week. Tap a column title to sort. 📍 copies the Bio Lab location — paste it in the game chat and tap it to jump there.</p>
     <div class="tablewrap" style="margin-top:6px"><table class="s2grid" id="s2table"></table></div>
   </div>
   <div class="card"><h2>Not scanned yet</h2><div id="s2missing"></div></div>
@@ -1427,7 +1427,7 @@ async function loadS2(){
   try{ rows = MANUAL.s2 || await fetchCSV(CFG.s2||DEFAULTS.s2); }catch(e){}
   if(!rows||!rows.length) rows=parseCSV(S2_LOCAL);
   S2 = rows.map(r=>{ const nm=pick(r,['Jugador','Player','Name']); const d=s2date(pick(r,['Fecha','Date'])); const b=num(pick(r,['BioLab','Bio Lab','Nivel'])); if(!nm||!d||b==null) return null;
-    return {name:canon(nm), date:d, wk:s2week(d), bio:b, res:num(pick(r,['Resistencia','Resistance'])), gh:pick(r,['Greenhouses','GH']), note:pick(r,['Notas','Notes'])}; }).filter(Boolean);
+    return {name:canon(nm), date:d, wk:s2week(d), bio:b, res:num(pick(r,['Resistencia','Resistance'])), gh:pick(r,['Greenhouses','GH']), note:pick(r,['Notas','Notes']), x:num(pick(r,['X'])), y:num(pick(r,['Y']))}; }).filter(Boolean);
   renderS2();
 }
 function renderS2(){
@@ -1440,7 +1440,7 @@ function renderS2(){
   // per-player: best level per week
   const by={};
   S2.forEach(r=>{ const p=by[r.name]||(by[r.name]={name:r.name,w:{},last:null}); p.w[r.wk]=Math.max(p.w[r.wk]||0,r.bio); if(!p.last||r.date>=p.last.date) p.last=r; });
-  const ps=Object.values(by).map(p=>{ const ws=Object.keys(p.w).map(Number).sort((a,b)=>a-b); const now=p.last.bio; const prevW=ws.filter(w=>w<p.last.wk).pop(); const gain=prevW!=null? now-p.w[prevW] : null; const first=p.w[ws[0]]; return {...p, now, gain, total: now-first, res:p.last.res, seen:p.last.date}; });
+  const ps=Object.values(by).map(p=>{ const ws=Object.keys(p.w).map(Number).sort((a,b)=>a-b); const now=p.last.bio; const prevW=ws.filter(w=>w<p.last.wk).pop(); const gain=prevW!=null? now-p.w[prevW] : null; const first=p.w[ws[0]]; const cx=[...S2].reverse().find(r=>r.name===p.name&&r.x!=null); return {...p, now, gain, total: now-first, res:p.last.res, seen:p.last.date, x:cx?cx.x:null, y:cx?cx.y:null}; });
   const roster=(CUR||[]).filter(p=>!p.out);
   const lv=ps.map(p=>p.now);
   const lastW = ps.length? Math.max(...ps.map(p=>p.last.wk)) : wk;
@@ -1466,11 +1466,15 @@ function renderS2(){
   const sorters={now:(a,b)=>b.now-a.now||a.name.localeCompare(b.name), gain:(a,b)=>(b.gain??-99)-(a.gain??-99), name:(a,b)=>a.name.localeCompare(b.name), res:(a,b)=>(b.res||0)-(a.res||0)};
   const rows=[...ps].sort(sorters[S2SORT]||sorters.now);
   const wcols=Array.from({length:lastW},(_,i)=>i+1);
-  $('#s2table').innerHTML = `<tr><th onclick="S2SORT='name';renderS2()">Player</th>${wcols.map(w=>`<th class="r" style="text-align:center">W${w}</th>`).join('')}<th class="r" onclick="S2SORT='now';renderS2()">Now</th><th class="r" onclick="S2SORT='gain';renderS2()">+Week</th><th class="r" onclick="S2SORT='res';renderS2()">Resist.</th></tr>`+
-    rows.map(p=>{ const i=CUR.findIndex(c=>c.name===p.name); return `<tr><td${i>=0?` style="cursor:pointer" onclick="openPlayer(${i})"`:''}>${esc(p.name)}</td>${wcols.map(w=>`<td class="c"><span style="${lvlColor(p.w[w])}">${p.w[w]??'·'}</span></td>`).join('')}<td class="r"><span class="lvl" style="${lvlColor(p.now)}">${p.now}</span></td><td class="r">${p.gain==null?'—':p.gain>0?`<span class="s2gain">+${p.gain}</span>`:p.gain===0?'<span style="color:var(--amber)">0</span>':p.gain}</td><td class="r">${p.res!=null?p.res.toLocaleString():'—'}</td></tr>`; }).join('');
+  $('#s2table').innerHTML = `<tr><th onclick="S2SORT='name';renderS2()">Player</th>${wcols.map(w=>`<th class="r" style="text-align:center">W${w}</th>`).join('')}<th class="r" onclick="S2SORT='now';renderS2()">Now</th><th class="r" onclick="S2SORT='gain';renderS2()">+Week</th><th class="r" onclick="S2SORT='res';renderS2()">Resist.</th><th class="r">Location</th></tr>`+
+    rows.map(p=>{ const i=CUR.findIndex(c=>c.name===p.name); return `<tr><td${i>=0?` style="cursor:pointer" onclick="openPlayer(${i})"`:''}>${esc(p.name)}</td>${wcols.map(w=>`<td class="c"><span style="${lvlColor(p.w[w])}">${p.w[w]??'·'}</span></td>`).join('')}<td class="r"><span class="lvl" style="${lvlColor(p.now)}">${p.now}</span></td><td class="r">${p.gain==null?'—':p.gain>0?`<span class="s2gain">+${p.gain}</span>`:p.gain===0?'<span style="color:var(--amber)">0</span>':p.gain}</td><td class="r">${p.res!=null?p.res.toLocaleString():'—'}</td><td class="r" style="white-space:nowrap">${p.x!=null?`<button class="mchip" style="padding:3px 8px" data-n="${esc(p.name)}" data-x="${p.x}" data-y="${p.y}" onclick="s2copy(event,this)" title="Copy for the game chat">📍 ${p.x}:${p.y}</button>`:'—'}</td></tr>`; }).join('');
   const miss=roster.filter(r=>!by[r.name]);
   $('#s2missing').innerHTML = miss.length? `<p class="how">${miss.length} members without a Bio Lab reading yet.</p><div class="chips">${miss.map(p=>`<span class="chip">${esc(p.name)}</span>`).join('')}</div>` : `<p class="how">Everyone has been scanned ✓</p>`;
 }
+function s2copy(ev,b){ ev.stopPropagation(); const name=b.dataset.n, x=b.dataset.x, y=b.dataset.y; const t=`[HALO]${name} Bio Lab [#:727 X:${x} Y:${y}]`;
+  const done=()=>toast('Copied: X:'+x+' Y:'+y);
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(done,()=>fallback()); } else fallback();
+  function fallback(){ const a=document.createElement('textarea'); a.value=t; document.body.appendChild(a); a.select(); try{document.execCommand('copy'); done();}catch(e){ prompt('Copy:',t);} a.remove(); } }
 /* snowfall (S2 tab only) */
 (function(){ const c=document.getElementById('snow'); if(!c) return; const x=c.getContext('2d'); let fl=[], on=false, raf=null;
   function size(){ c.width=innerWidth*devicePixelRatio; c.height=innerHeight*devicePixelRatio; }
